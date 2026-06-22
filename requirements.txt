@@ -6,6 +6,7 @@ python-telegram-bot[job-queue]==21.6
 discord.py>=2.3.0
 fastapi
 uvicorn[standard]
+python-multipart
 
 # ── HTTP & async ──────────────────────────────────────────────────────────────
 aiohttp
