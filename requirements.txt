@@ -1,0 +1,32 @@
+# ── Core LLM & API ────────────────────────────────────────────────────────────
+groq
+
+# ── Channels ──────────────────────────────────────────────────────────────────
+python-telegram-bot[job-queue]==21.6
+discord.py>=2.3.0
+fastapi
+uvicorn[standard]
+
+# ── HTTP & async ──────────────────────────────────────────────────────────────
+aiohttp
+requests
+
+# ── Knowledge base (RAG) ──────────────────────────────────────────────────────
+chromadb
+sentence-transformers
+rank-bm25
+pypdf
+
+# ── Free data tools ───────────────────────────────────────────────────────────
+duckduckgo-search
+yfinance
+youtube-transcript-api
+
+# ── Scheduler ─────────────────────────────────────────────────────────────────
+apscheduler
+sqlalchemy
+
+# ── Config & utilities ────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+pyyaml
+pytz
