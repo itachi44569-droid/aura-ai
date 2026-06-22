@@ -17,7 +17,7 @@ def load_client(name: str = "default") -> dict:
 
 GROQ_API_KEY   = os.getenv("GROQ_API_KEY",   "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
-WEB_PORT       = int(os.getenv("WEB_PORT",   "8000"))
+WEB_PORT       = int(os.getenv("PORT", os.getenv("WEB_PORT", "8000")))  # Railway sets PORT
 DB_PATH        = os.getenv("DB_PATH",        "brain.db")
 CHROMA_PATH    = os.getenv("CHROMA_PATH",    "./chroma_db")
 CLIENT_NAME    = os.getenv("CLIENT_NAME",    "default")
