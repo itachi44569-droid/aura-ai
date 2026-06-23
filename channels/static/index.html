@@ -288,6 +288,14 @@ textarea#input::placeholder { color:var(--text4); }
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Export
         </button>
+        <a href="/login" id="topbar-account-btn" class="tb-export" title="Sign in / Account" style="text-decoration:none">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="topbar-account-label">Account</span>
+        </a>
+        <a href="/admin" class="tb-export" title="Admin Dashboard" style="text-decoration:none">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Admin
+        </a>
       </div>
     </header>
 
@@ -928,27 +936,34 @@ async function submitVoice(mime) {
     }
 
     // 2. Auth check — only redirect if require_login is enabled
+    function _applyLoggedIn(me, token) {
+      const name = me.name || me.email.split('@')[0];
+      // Update topbar account button → shows name, click = sign out
+      const btn = document.getElementById('topbar-account-btn');
+      const lbl = document.getElementById('topbar-account-label');
+      if (btn && lbl) {
+        lbl.textContent = '👤 ' + name;
+        btn.removeAttribute('href');
+        btn.style.cursor = 'pointer';
+        btn.title = 'Signed in as ' + me.email + ' · Click to sign out';
+        btn.onclick = async (e) => {
+          e.preventDefault();
+          await fetch('/auth/logout', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token }) });
+          localStorage.removeItem('_nv_token'); localStorage.removeItem('_nv_name');
+          location.href = '/login';
+        };
+      }
+      const us = document.getElementById('user-status');
+      if (us) us.textContent = 'Signed in: ' + name;
+    }
+
     if (cfg.require_login === 'true') {
       const token = localStorage.getItem('_nv_token');
       if (!token) { location.href = '/login'; return; }
       try {
         const me = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.json());
         if (!me.email) { localStorage.removeItem('_nv_token'); location.href = '/login'; return; }
-        // Show user badge in topbar
-        const badge = document.createElement('div');
-        badge.className = 'tb-badge mem';
-        badge.textContent = '👤 ' + (me.name || me.email.split('@')[0]);
-        badge.style.cursor = 'pointer';
-        badge.title = 'Signed in as ' + me.email + ' · Click to sign out';
-        badge.onclick = async () => {
-          await fetch('/auth/logout', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token }) });
-          localStorage.removeItem('_nv_token');
-          location.href = '/login';
-        };
-        document.querySelector('.tb-r').prepend(badge);
-        // Show name in sidebar
-        const us = document.getElementById('user-status');
-        if (us) us.textContent = 'Signed in: ' + (me.name || me.email.split('@')[0]);
+        _applyLoggedIn(me, token);
       } catch { localStorage.removeItem('_nv_token'); location.href = '/login'; return; }
     } else {
       // Not required — show name if token exists
@@ -957,6 +972,7 @@ async function submitVoice(mime) {
         try {
           const me = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.json());
           if (me.email) {
+            _applyLoggedIn(me, token);
             const us = document.getElementById('user-status');
             if (us) us.textContent = 'Signed in: ' + (me.name || me.email.split('@')[0]);
           }
