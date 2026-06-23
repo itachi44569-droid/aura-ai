@@ -213,16 +213,32 @@ textarea#input::placeholder { color:var(--text4); }
 /* Sidebar overlay for mobile */
 .sidebar-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px); }
 .sidebar-overlay.show { display:block; }
+/* PWA install banner */
+.install-banner { display:none;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(90deg,rgba(79,70,229,.18),rgba(124,58,237,.18));border-bottom:1px solid rgba(79,70,229,.3);flex-shrink:0; }
+.install-banner.show { display:flex; }
+.install-banner-text { flex:1;font-size:13px;font-weight:500;color:var(--text); }
+.install-banner-sub { font-size:11px;color:var(--text2);font-weight:400; }
+.install-btn { padding:7px 16px;border-radius:20px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;color:#fff;font:600 12px 'Inter',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .18s; }
+.install-btn:hover { transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,.4); }
+.install-dismiss { background:none;border:none;color:var(--text4);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0;line-height:1; }
+/* Icon-only topbar links on mobile */
+.tb-link-label { }
 @media(max-width:700px){
   .sidebar{display:flex;position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .26s cubic-bezier(.4,0,.2,1);}
   .sidebar.open{transform:translateX(0);}
   .hamburger{display:flex;}
-  .tb-badge.kb,.tb-badge.mem{display:none;}
+  .tb-badge,.model-chip{display:none!important;}
+  .tb-export{padding:6px 8px;}
+  .tb-link-label{display:none;}
   .suggestions{grid-template-columns:1fr;}
-  .topbar{padding:10px 14px;}
-  .chat{padding:18px 14px 8px;}
-  .input-area{padding:10px 14px 16px;}
+  .topbar{padding:10px 12px;gap:8px;}
+  .chat{padding:14px 12px 6px;}
+  .input-area{padding:8px 12px 14px;}
   .followup-row{padding-left:0;}
+  .welcome-heading{font-size:24px;}
+  .welcome-sub{font-size:13px;padding:0 12px;}
+  .welcome-cards{grid-template-columns:1fr;gap:10px;padding:0 4px;}
+  .bubble{font-size:14px;line-height:1.6;}
 }
 </style>
 </head>
@@ -284,20 +300,31 @@ textarea#input::placeholder { color:var(--text4); }
         <div class="tb-badge mem">⚡ Memory</div>
         <div class="tb-badge kb">📚 Knowledge Base</div>
         <div class="tb-badge tools">🔧 11 Tools</div>
-        <button class="tb-export" onclick="exportChat()" title="Download conversation as Markdown">
+        <button class="tb-export" onclick="exportChat()" title="Export chat" style="gap:5px">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export
+          <span class="tb-link-label">Export</span>
         </button>
         <a href="/login" id="topbar-account-btn" class="tb-export" title="Sign in / Account" style="text-decoration:none">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span id="topbar-account-label">Account</span>
+          <span id="topbar-account-label" class="tb-link-label">Account</span>
         </a>
         <a href="/admin" class="tb-export" title="Admin Dashboard" style="text-decoration:none">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Admin
+          <span class="tb-link-label">Admin</span>
         </a>
       </div>
     </header>
+
+    <!-- PWA install banner — shown by JS when browser fires beforeinstallprompt -->
+    <div class="install-banner" id="install-banner">
+      <div style="font-size:22px;flex-shrink:0">📲</div>
+      <div class="install-banner-text">
+        <div>Add Nova AI to your home screen</div>
+        <div class="install-banner-sub">Works offline · Opens like an app · No app store needed</div>
+      </div>
+      <button class="install-btn" id="install-btn">Install App</button>
+      <button class="install-dismiss" id="install-dismiss" title="Dismiss">×</button>
+    </div>
 
     <div class="chat" id="chat">
       <div class="welcome" id="welcome">
@@ -986,6 +1013,32 @@ async function submitVoice(mime) {
     navigator.serviceWorker.register('/static/sw.js').catch(() => {});
   }
 })();
+
+// 4. PWA install prompt
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _installPrompt = e;
+  // Show banner if not dismissed before
+  if (!sessionStorage.getItem('install_dismissed')) {
+    document.getElementById('install-banner').classList.add('show');
+  }
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  const { outcome } = await _installPrompt.userChoice;
+  _installPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+document.getElementById('install-dismiss').addEventListener('click', () => {
+  document.getElementById('install-banner').classList.remove('show');
+  sessionStorage.setItem('install_dismissed', '1');
+});
+// Also show banner if already installed check fails (standalone = already installed)
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  document.getElementById('install-banner').style.display = 'none';
+}
 
 loadServerHistory(); connect(); inp.focus();
 </script>
