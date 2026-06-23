@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Nova AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #050816; --glass: rgba(255,255,255,.04); --glass-b: rgba(255,255,255,.08);
+  --text: #F8FAFC; --text2: #94A3B8; --text3: #475569;
+  --indigo: #4F46E5; --violet: #7C3AED; --green: #22C55E;
+}
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; align-items: center; justify-content: center; }
+
+.bg { position: fixed; inset: 0; z-index: 0; }
+.orb { position: absolute; border-radius: 50%; filter: blur(100px); }
+.o1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(79,70,229,.2) 0%, transparent 70%); top: -200px; left: -100px; animation: d1 28s ease-in-out infinite; }
+.o2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(124,58,237,.18) 0%, transparent 70%); bottom: -150px; right: -80px; animation: d2 34s ease-in-out infinite; }
+@keyframes d1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-30px)} }
+@keyframes d2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,40px)} }
+.bg-grid { position: fixed; inset: 0; z-index: 1; background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: 64px 64px; mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 75%); }
+
+.card { position: relative; z-index: 10; width: 100%; max-width: 420px; padding: 0 20px; animation: fadeUp .45s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.logo-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 28px; }
+.logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--indigo), var(--violet)); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; }
+.logo::after { content: ''; position: absolute; inset: -4px; border-radius: 14px; background: linear-gradient(135deg, var(--indigo), var(--violet)); opacity: .25; filter: blur(10px); z-index: -1; }
+.app-name { font-size: 22px; font-weight: 800; letter-spacing: -.5px; background: linear-gradient(135deg, #fff 30%, #94A3B8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.box { background: rgba(255,255,255,.03); border: 1px solid var(--glass-b); border-radius: 18px; padding: 32px; backdrop-filter: blur(24px); }
+
+.tabs { display: flex; gap: 4px; background: rgba(255,255,255,.04); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+.tab { flex: 1; padding: 9px; text-align: center; font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer; transition: all .18s; color: var(--text2); border: none; background: none; }
+.tab.active { background: rgba(79,70,229,.2); color: #A5B4FC; border: 1px solid rgba(79,70,229,.3); }
+
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+input[type=text], input[type=email], input[type=password] {
+  width: 100%; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px; color: var(--text); font: 14px 'Inter', sans-serif; padding: 11px 14px;
+  outline: none; transition: border-color .15s;
+}
+input:focus { border-color: rgba(79,70,229,.5); background: rgba(79,70,229,.04); }
+input::placeholder { color: var(--text3); }
+
+.btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--indigo), var(--violet)); color: #fff; font: 600 14px 'Inter', sans-serif; cursor: pointer; transition: all .18s; margin-top: 4px; }
+.btn:hover { box-shadow: 0 6px 24px rgba(79,70,229,.45); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.msg { font-size: 12.5px; padding: 10px 13px; border-radius: 8px; margin-top: 14px; display: none; }
+.msg.error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); color: #FCA5A5; }
+.msg.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.2); color: #4ADE80; }
+
+.or-row { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
+.or-line { flex: 1; height: 1px; background: rgba(255,255,255,.07); }
+.or-txt { font-size: 11px; color: var(--text3); }
+
+.guest-btn { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color: var(--text2); font: 500 13px 'Inter', sans-serif; cursor: pointer; transition: all .18s; }
+.guest-btn:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+
+.footer-txt { text-align: center; font-size: 11px; color: var(--text3); margin-top: 18px; }
+</style>
+</head>
+<body>
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div></div>
+<div class="bg-grid"></div>
+
+<div class="card">
+  <div class="logo-row">
+    <div class="logo" id="logo-emoji">✦</div>
+    <div class="app-name" id="app-name">Nova AI</div>
+  </div>
+
+  <div class="box">
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="showTab('login')">Sign In</button>
+      <button class="tab" id="tab-register" onclick="showTab('register')">Create Account</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="l-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="l-pass" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn" id="l-btn" onclick="doLogin()">Sign In</button>
+      <div class="msg" id="l-msg"></div>
+    </div>
+
+    <!-- Register form -->
+    <div id="form-register" style="display:none">
+      <div class="form-group">
+        <label>Your name</label>
+        <input type="text" id="r-name" placeholder="Alex Johnson" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="r-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="r-pass" placeholder="Choose a strong password" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirm password</label>
+        <input type="password" id="r-pass2" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn" id="r-btn" onclick="doRegister()">Create Account</button>
+      <div class="msg" id="r-msg"></div>
+    </div>
+
+    <div class="or-row"><div class="or-line"></div><span class="or-txt">or</span><div class="or-line"></div></div>
+    <button class="guest-btn" onclick="guestMode()">Continue as Guest (no account needed)</button>
+  </div>
+
+  <div class="footer-txt">Your conversations are private and stored locally.</div>
+</div>
+
+<script>
+function showTab(t) {
+  document.getElementById('form-login').style.display    = t === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = t === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    t === 'login');
+  document.getElementById('tab-register').classList.toggle('active', t === 'register');
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const btn   = document.getElementById('l-btn');
+  const msg   = document.getElementById('l-msg');
+  if (!email || !pass) { showMsg(msg, 'error', 'Please fill in all fields.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res  = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
+    const data = await res.json();
+    if (data.ok) {
+      localStorage.setItem('_nv_token', data.token);
+      localStorage.setItem('_nv_name',  data.name || data.email);
+      showMsg(msg, 'success', 'Welcome back! Redirecting…');
+      setTimeout(() => location.href = '/', 800);
+    } else {
+      showMsg(msg, 'error', data.error || 'Login failed.');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  } catch {
+    showMsg(msg, 'error', 'Cannot reach server. Check your connection.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+async function doRegister() {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  const btn   = document.getElementById('r-btn');
+  const msg   = document.getElementById('r-msg');
+  if (!email || !pass) { showMsg(msg, 'error', 'Email and password are required.'); return; }
+  if (pass !== pass2)  { showMsg(msg, 'error', 'Passwords do not match.'); return; }
+  if (pass.length < 6) { showMsg(msg, 'error', 'Password must be at least 6 characters.'); return; }
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const res  = await fetch('/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass, name }) });
+    const data = await res.json();
+    if (data.ok) {
+      // Auto-login after register
+      const lr = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
+      const ld = await lr.json();
+      if (ld.ok) {
+        localStorage.setItem('_nv_token', ld.token);
+        localStorage.setItem('_nv_name',  ld.name || ld.email);
+      }
+      showMsg(msg, 'success', 'Account created! Welcome to Nova AI!');
+      setTimeout(() => location.href = '/', 900);
+    } else {
+      showMsg(msg, 'error', data.error || 'Registration failed.');
+      btn.disabled = false; btn.textContent = 'Create Account';
+    }
+  } catch {
+    showMsg(msg, 'error', 'Cannot reach server. Check your connection.');
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+function guestMode() {
+  localStorage.removeItem('_nv_token');
+  location.href = '/';
+}
+
+function showMsg(el, type, text) {
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
+// Apply dynamic branding
+(async function() {
+  try {
+    const cfg = await fetch('/config').then(r => r.json());
+    if (cfg.bot_name) {
+      document.getElementById('app-name').textContent = cfg.bot_name;
+      document.title = 'Sign In — ' + cfg.bot_name;
+    }
+    if (cfg.logo_emoji) document.getElementById('logo-emoji').textContent = cfg.logo_emoji;
+    if (cfg.primary_color) {
+      document.documentElement.style.setProperty('--indigo', cfg.primary_color);
+    }
+  } catch {}
+})();
+
+// If already logged in, redirect
+const tok = localStorage.getItem('_nv_token');
+if (tok) {
+  fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + tok } })
+    .then(r => r.json())
+    .then(d => { if (d.email) location.href = '/'; })
+    .catch(() => {});
+}
+</script>
+</body>
+</html>

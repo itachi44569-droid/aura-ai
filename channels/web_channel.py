@@ -10,10 +10,23 @@ Endpoints:
   POST /admin/keys/generate
   POST /admin/keys/revoke
   GET  /admin/keys
+  GET  /admin/analytics   — enhanced analytics + daily charts
+  GET  /admin/settings    — get app settings
+  POST /admin/settings    — update app settings
+  GET  /admin/users       — list registered users
+  POST /admin/users       — create user (admin)
+  DELETE /admin/users/{id} — deactivate user
+  POST /admin/users/{id}/activate — re-activate user
+  POST /auth/register     — register new user
+  POST /auth/login        — login, returns session token
+  POST /auth/logout       — invalidate session token
+  GET  /auth/me           — validate token, get user info
+  GET  /config            — public app config (branding)
+  GET  /login             — login page
 """
 import os
 from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, Header
+from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +38,11 @@ from core.rag   import RAG
 from core.keys  import (
     generate_key, validate_key, check_key_limit,
     increment_key_usage, list_keys, revoke_key, init_keys_table,
+)
+from core.auth import (
+    init_auth, register_user, login_user, validate_token, delete_session,
+    list_users, deactivate_user, activate_user, get_settings, update_settings,
+    save_conversation, list_conversations, get_conversation, delete_conversation,
 )
 
 STATIC_DIR   = Path(__file__).parent / "static"
@@ -38,6 +56,11 @@ def _check_admin(pw: str | None):
 
 def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     init_keys_table()
+    init_auth()
+
+    # Apply saved persona_addon to brain on startup
+    _s = get_settings()
+    brain.system_addon = _s.get("persona_addon", "")
 
     app = FastAPI(
         title       = brain.personality.get("name", "AI Brain"),
@@ -81,6 +104,37 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     class RevokeKeyRequest(BaseModel):
         key: str
 
+    class RegisterRequest(BaseModel):
+        email:    str
+        password: str
+        name:     str = ""
+
+    class LoginRequest(BaseModel):
+        email:    str
+        password: str
+
+    class LogoutRequest(BaseModel):
+        token: str
+
+    class SettingsUpdateRequest(BaseModel):
+        bot_name:      Optional[str] = None
+        logo_emoji:    Optional[str] = None
+        primary_color: Optional[str] = None
+        greeting:      Optional[str] = None
+        persona_addon: Optional[str] = None
+        temperature:   Optional[str] = None
+        require_login: Optional[str] = None
+
+    class CreateUserRequest(BaseModel):
+        email:    str
+        password: str
+        name:     str = ""
+
+    class SaveConvRequest(BaseModel):
+        conv_id:  str
+        title:    str
+        messages: list
+
     # ── Static files ──────────────────────────────────────────────────────────
 
     @app.get("/")
@@ -92,6 +146,11 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     async def admin_page():
         f = STATIC_DIR / "admin.html"
         return FileResponse(f) if f.exists() else {"error": "admin page not found"}
+
+    @app.get("/login")
+    async def login_page():
+        f = STATIC_DIR / "login.html"
+        return FileResponse(f) if f.exists() else {"error": "login page not found"}
 
     if STATIC_DIR.exists():
         app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -138,6 +197,166 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
                 await ws.send_text("\n[DONE]")
         except Exception:
             await ws.close()
+
+    # ── Image analysis ────────────────────────────────────────────────────────
+
+    @app.post("/chat/image")
+    async def chat_image(
+        user_id: str,
+        image: UploadFile = File(...),
+        caption: str = "",
+    ):
+        """
+        Accept a browser image upload, analyze with Groq vision (Llama 4 Scout).
+        If the user added a caption/question, answer that about the image.
+        Otherwise just describe what's visible — no code, no tangents.
+        """
+        ext = (image.filename or "image.jpg").rsplit(".", 1)[-1].lower()
+        mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+                    "gif": "image/gif", "webp": "image/webp", "bmp": "image/bmp"}
+        mime = mime_map.get(ext, "image/jpeg")
+        if ext not in mime_map:
+            raise HTTPException(status_code=400, detail="Unsupported image type. Use JPG, PNG, WEBP, or GIF.")
+        try:
+            image_bytes = await image.read()
+            if len(image_bytes) > 10 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="Image too large — max 10 MB.")
+
+            vision = brain.get_vision()
+            if not vision:
+                raise HTTPException(status_code=503, detail="Vision model unavailable.")
+
+            # If user asked a specific question, answer only that.
+            # Otherwise give a plain, conversational description — no code.
+            if caption and caption.strip():
+                prompt = caption.strip()
+            else:
+                prompt = (
+                    "Look at this image and describe what you see in a friendly, "
+                    "conversational way. Mention what's in it, any text visible, "
+                    "colors, and anything interesting — but keep it short and natural. "
+                    "Do NOT write code or suggest how to build anything."
+                )
+
+            response = await vision.analyze_bytes(image_bytes, mime, prompt)
+            brain._analytics.log_image(user_id, "web")
+            return {"response": response}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    # ── Document analysis ─────────────────────────────────────────────────────
+
+    @app.post("/chat/document")
+    async def chat_document(
+        user_id: str,
+        file: UploadFile = File(...),
+        caption: str = "",
+    ):
+        """
+        Accept PDF, TXT, DOCX, or MD files, extract text, and let Nova answer
+        questions about the document. Truncates at 20 000 chars (~5 000 words).
+        """
+        filename = file.filename or "document"
+        ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        if ext not in ("pdf", "txt", "docx", "md"):
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported file type. Upload PDF, TXT, DOCX, or MD."
+            )
+        try:
+            content = await file.read()
+            if len(content) > 20 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="File too large — max 20 MB.")
+
+            # ── Text extraction ───────────────────────────────────────────────
+            text = ""
+            if ext == "pdf":
+                import io
+                from pypdf import PdfReader
+                reader = PdfReader(io.BytesIO(content))
+                for page in reader.pages:
+                    text += (page.extract_text() or "") + "\n"
+            elif ext in ("txt", "md"):
+                text = content.decode("utf-8", errors="replace")
+            elif ext == "docx":
+                import io
+                from docx import Document as DocxDocument
+                doc = DocxDocument(io.BytesIO(content))
+                text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+            text = text.strip()
+            if not text:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Could not extract text from this file — it may be scanned or image-based."
+                )
+
+            # ── Truncate if very long ─────────────────────────────────────────
+            MAX_CHARS = 20_000
+            truncated = len(text) > MAX_CHARS
+            if truncated:
+                text = text[:MAX_CHARS]
+            trunc_note = (
+                f"\n\n[Note: document was long — only the first {MAX_CHARS:,} characters were loaded.]"
+                if truncated else ""
+            )
+
+            # ── Build prompt ──────────────────────────────────────────────────
+            if caption and caption.strip():
+                user_msg = (
+                    f"I've uploaded a document called '{filename}'. "
+                    f"{caption.strip()}\n\nDocument content:\n\n{text}{trunc_note}"
+                )
+            else:
+                user_msg = (
+                    f"I've uploaded a document called '{filename}'. "
+                    f"Please: 1) Tell me what this document is about in 2–3 sentences, "
+                    f"2) List the key topics or sections it covers, "
+                    f"3) Ask me what I'd like to know about it.\n\n"
+                    f"Document content:\n\n{text}{trunc_note}"
+                )
+
+            response = await brain.think(user_id, user_msg)
+            return {
+                "filename": filename,
+                "chars_extracted": len(text),
+                "truncated": truncated,
+                "response": response,
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    # ── Voice transcription ───────────────────────────────────────────────────
+
+    @app.post("/voice")
+    async def voice_chat(
+        user_id: str,
+        audio: UploadFile = File(...),
+    ):
+        """
+        Accept a browser audio blob (webm/wav/ogg), transcribe with Groq Whisper,
+        then get Nova's response. Returns {transcript, response}.
+        """
+        try:
+            audio_bytes = await audio.read()
+            filename = audio.filename or "audio.webm"
+            transcript, response = await brain.transcribe_and_respond(
+                user_id=user_id,
+                audio_bytes=audio_bytes,
+                filename=filename,
+                channel="web",
+            )
+            if not transcript:
+                raise HTTPException(status_code=422, detail="Could not transcribe audio — try speaking louder or closer to the mic.")
+            return {"transcript": transcript, "response": response}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
     # ── Knowledge base ────────────────────────────────────────────────────────
 
@@ -187,6 +406,50 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         rag.clear(client_id)
         return {"status": "cleared"}
 
+    # ── Public config (branding) ──────────────────────────────────────────────
+
+    @app.get("/config")
+    async def public_config():
+        s = get_settings()
+        return {
+            "bot_name":      s.get("bot_name", "Nova AI"),
+            "logo_emoji":    s.get("logo_emoji", "✦"),
+            "primary_color": s.get("primary_color", "#4F46E5"),
+            "greeting":      s.get("greeting", ""),
+            "require_login": s.get("require_login", "false"),
+        }
+
+    # ── Auth endpoints ────────────────────────────────────────────────────────
+
+    @app.post("/auth/register")
+    async def auth_register(req: RegisterRequest):
+        result = register_user(req.email, req.password, req.name)
+        if not result["ok"]:
+            raise HTTPException(status_code=409, detail=result.get("error", "Registration failed"))
+        return result
+
+    @app.post("/auth/login")
+    async def auth_login(req: LoginRequest):
+        result = login_user(req.email, req.password)
+        if not result["ok"]:
+            raise HTTPException(status_code=401, detail=result.get("error", "Login failed"))
+        return result
+
+    @app.post("/auth/logout")
+    async def auth_logout(req: LogoutRequest):
+        delete_session(req.token)
+        return {"ok": True}
+
+    @app.get("/auth/me")
+    async def auth_me(authorization: Optional[str] = Header(None)):
+        token = ""
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization[7:]
+        user = validate_token(token)
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+        return user
+
     # ── Admin endpoints ───────────────────────────────────────────────────────
 
     @app.get("/admin/stats")
@@ -211,6 +474,102 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         _check_admin(x_admin_password)
         revoke_key(req.key)
         return {"status": "revoked", "key": req.key}
+
+    @app.get("/admin/analytics")
+    async def admin_analytics(x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        s = brain.get_stats()
+        users = list_users()
+        daily_msgs = brain._analytics.get_daily_counts("message", days=30)
+        return {
+            **s,
+            "tools_enabled":          [t.name for t in brain.tools],
+            "rag_enabled":            rag is not None,
+            "total_registered_users": len(users),
+            "active_registered_users": sum(1 for u in users if u["is_active"]),
+            "daily_messages":         list(reversed(daily_msgs)),
+        }
+
+    @app.get("/admin/settings")
+    async def admin_get_settings(x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        return get_settings()
+
+    @app.post("/admin/settings")
+    async def admin_update_settings(req: SettingsUpdateRequest, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        try:
+            raw = req.model_dump()
+        except AttributeError:
+            raw = req.dict()
+        updates = {k: v for k, v in raw.items() if v is not None}
+        if updates:
+            update_settings(updates)
+            # Apply persona addon to brain in-memory immediately
+            if "persona_addon" in updates:
+                brain.system_addon = updates["persona_addon"]
+        return {"ok": True, "updated": list(updates.keys())}
+
+    @app.get("/admin/users")
+    async def admin_list_users(x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        return {"users": list_users()}
+
+    @app.post("/admin/users")
+    async def admin_create_user(req: CreateUserRequest, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        result = register_user(req.email, req.password, req.name)
+        if not result["ok"]:
+            raise HTTPException(status_code=409, detail=result.get("error", "Failed"))
+        return result
+
+    @app.delete("/admin/users/{user_id}")
+    async def admin_deactivate_user(user_id: int, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        deactivate_user(user_id)
+        return {"ok": True}
+
+    @app.post("/admin/users/{user_id}/activate")
+    async def admin_activate_user(user_id: int, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password)
+        activate_user(user_id)
+        return {"ok": True}
+
+    # ── Conversation history ──────────────────────────────────────────────────
+
+    def _auth_user(authorization: str | None) -> dict:
+        token = ""
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization[7:]
+        user = validate_token(token)
+        if not user:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+        return user
+
+    @app.post("/history/save")
+    async def history_save(req: SaveConvRequest, authorization: Optional[str] = Header(None)):
+        user = _auth_user(authorization)
+        result = save_conversation(user["id"], req.conv_id, req.title, req.messages)
+        return result
+
+    @app.get("/history")
+    async def history_list(authorization: Optional[str] = Header(None)):
+        user = _auth_user(authorization)
+        return {"conversations": list_conversations(user["id"])}
+
+    @app.get("/history/{conv_id}")
+    async def history_get(conv_id: str, authorization: Optional[str] = Header(None)):
+        user = _auth_user(authorization)
+        conv = get_conversation(conv_id, user["id"])
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return conv
+
+    @app.delete("/history/{conv_id}")
+    async def history_delete(conv_id: str, authorization: Optional[str] = Header(None)):
+        user = _auth_user(authorization)
+        delete_conversation(conv_id, user["id"])
+        return {"ok": True}
 
     # ── Debug (remove in production) ──────────────────────────────────────────
 

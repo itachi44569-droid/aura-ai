@@ -28,12 +28,14 @@ from .reflection  import ReflectionEngine
 
 # ── Models ─────────────────────────────────────────────────────────────────────
 
-MODEL_STRONG  = "llama-3.3-70b-versatile"
-MODEL_FAST    = "llama-3.1-8b-instant"
+MODEL_TOOL    = "llama-3.3-70b-versatile"         # tool calling — reliable function schemas
+MODEL_REASON  = "deepseek-r1-distill-llama-70b"  # final answers — deep reasoning (free on Groq)
+MODEL_FAST    = "llama-3.1-8b-instant"            # extraction, fallback, quick tasks
 MODEL_EXTRACT = "llama-3.1-8b-instant"
+MODEL_STRONG  = MODEL_REASON                      # alias kept for compatibility
 
 MAX_TOOL_LOOPS     = 6
-MAX_TOKENS         = 1024
+MAX_TOKENS         = 2048
 FACT_EXTRACT_EVERY = 5
 
 
@@ -65,6 +67,9 @@ class Brain:
         # Optional vision + voice (lazy init to avoid import errors)
         self._vision = None
         self._voice  = None
+
+        # Custom persona addon — set at startup from DB, updated live via /admin/settings
+        self.system_addon: str = ""
 
     def get_vision(self):
         if self._vision is None:
@@ -152,31 +157,56 @@ class Brain:
         _, specialist_ext = await self._router.route(user_msg)
         messages     = await self._build_messages(user_id, user_msg, specialist_ext)
         tool_schemas = [t.schema for t in self.tools] if self.tools else None
-        messages, direct = await self._tool_phase(messages, tool_schemas)
+
+        # Collect tool signals to yield before the answer
+        tool_signals: list[str] = []
+        async def _signal(name: str):
+            tool_signals.append(f"__tool:{name}")
+
+        messages, direct = await self._tool_phase(messages, tool_schemas, _signal)
+
+        # Emit tool signals first so the UI can show "Searching the web…"
+        for sig in tool_signals:
+            yield sig
 
         full_response = ""
         if direct:
-            # Model answered directly in tool phase — stream the cached text
-            full_response = direct
-            yield direct
+            full_response = self._strip_think(direct)
+            if full_response:
+                yield full_response
         else:
-            try:
-                stream = await self._groq.chat.completions.create(
-                    model      = MODEL_STRONG,
-                    messages   = messages,
-                    max_tokens = MAX_TOKENS,
-                    temperature= self.personality.get("temperature", 0.7),
-                    stream     = True,
-                )
-                async for chunk in stream:
-                    delta = chunk.choices[0].delta.content or ""
-                    if delta:
-                        full_response += delta
-                        yield delta
-            except Exception:
-                result = await self._call_llm(messages, MODEL_FAST)
-                full_response = result
-                yield result
+            # ── Try Gemini Flash first (free, larger context, very capable) ──
+            gemini_ok = False
+            if os.getenv("GEMINI_API_KEY"):
+                try:
+                    async for chunk in self._gemini_stream(messages):
+                        if chunk:
+                            full_response += chunk
+                            yield chunk
+                    gemini_ok = bool(full_response)
+                except Exception as e:
+                    print(f"[Brain] Gemini failed, falling back to Groq R1: {e}")
+
+            # ── Fall back to DeepSeek R1 on Groq with think-tag filtering ──
+            if not gemini_ok:
+                try:
+                    stream = await self._groq.chat.completions.create(
+                        model      = MODEL_REASON,
+                        messages   = messages,
+                        max_tokens = MAX_TOKENS,
+                        temperature= self.personality.get("temperature", 0.7),
+                        stream     = True,
+                    )
+                    async for text, is_signal in self._stream_with_think_filter(stream):
+                        if is_signal:
+                            yield text   # "__think:start" / "__think:done"
+                        elif text:
+                            full_response += text
+                            yield text
+                except Exception:
+                    result = await self._call_llm(messages, MODEL_FAST)
+                    full_response = result
+                    yield result
 
         # Post-stream: memory + analytics
         self.memory.add_exchange(user_id, user_msg, full_response)
@@ -278,6 +308,8 @@ class Brain:
             parts.append(summary)
         if rag:
             parts.append(rag)
+        if self.system_addon:
+            parts.append(f"\n[CUSTOM INSTRUCTIONS]\n{self.system_addon}")
         parts.append(
             "\nRules: "
             "Answer in the same language the user writes. "
@@ -290,22 +322,22 @@ class Brain:
     # ── Agentic loop ───────────────────────────────────────────────────────────
 
     async def _agent_loop(self, messages: list, tool_schemas) -> str:
-        messages, direct = await self._tool_phase(messages, tool_schemas)
+        messages, direct = await self._tool_phase(messages, tool_schemas, None)
         if direct:
-            return direct  # model answered directly — no extra LLM call needed
-        return await self._call_llm(messages, MODEL_STRONG)
+            return self._strip_think(direct)
+        return await self._call_llm(messages, MODEL_REASON)
 
-    async def _tool_phase(self, messages: list, tool_schemas) -> tuple[list, str]:
+    async def _tool_phase(self, messages: list, tool_schemas,
+                          tool_signal_cb=None) -> tuple[list, str]:
         """
         Returns (messages, direct_response).
-        direct_response is non-empty when the model answered without using tools,
-        in which case no further LLM call is needed.
-        After tool calls, direct_response is "" and _call_llm should summarize.
+        direct_response is non-empty when the model answered without using tools.
+        tool_signal_cb: optional async callable(tool_name) for streaming tool signals.
         """
         tools_were_called = False
         for _ in range(MAX_TOOL_LOOPS):
             kwargs = {
-                "model":       MODEL_STRONG,
+                "model":       MODEL_TOOL,
                 "messages":    messages,
                 "max_tokens":  MAX_TOKENS,
                 "temperature": self.personality.get("temperature", 0.7),
@@ -322,12 +354,7 @@ class Brain:
 
             msg = resp.choices[0].message
             if not msg.tool_calls:
-                # Model gave a direct answer (no tools)
                 content = msg.content or ""
-                if not tools_were_called:
-                    # No tools at all — return as direct response
-                    return messages, content
-                # Tools ran earlier; model just summarized — return its summary directly
                 return messages, content
 
             tools_were_called = True
@@ -341,9 +368,10 @@ class Brain:
                 ],
             })
 
-            # Track tool calls in analytics
             for tc in msg.tool_calls:
                 self._analytics.log_tool_call(tc.function.name)
+                if tool_signal_cb:
+                    await tool_signal_cb(tc.function.name)
 
             results = await asyncio.gather(*[
                 run_tool(tc.function.name, json.loads(tc.function.arguments or "{}"))
@@ -368,12 +396,141 @@ class Brain:
                     max_tokens  = MAX_TOKENS,
                     temperature = self.personality.get("temperature", 0.7),
                 )
-                content = resp.choices[0].message.content
+                content = self._strip_think(resp.choices[0].message.content or "")
                 return content or "I'm sorry, I couldn't generate a response."
             except Exception as e:
                 print(f"[Brain] LLM error with {m}: {type(e).__name__}: {e}")
                 continue
         return "I'm having trouble right now. Please try again in a moment."
+
+    # ── Model utilities ────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _strip_think(text: str) -> str:
+        """Remove DeepSeek R1 <think>…</think> reasoning blocks from output."""
+        import re
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+    async def _stream_with_think_filter(self, stream):
+        """
+        Async generator that wraps a Groq stream and silently discards
+        <think>…</think> blocks, yielding (text, is_signal) pairs.
+        is_signal=True → text is '__think:start' or '__think:done' (not content).
+        """
+        buf = ""
+        in_think = False
+        async for chunk in stream:
+            delta = chunk.choices[0].delta.content or ""
+            if not delta:
+                continue
+            buf += delta
+            while buf:
+                if in_think:
+                    end = buf.find("</think>")
+                    if end == -1:
+                        buf = ""   # still inside think block; wait for more
+                        break
+                    in_think = False
+                    buf = buf[end + 8:].lstrip("\n")   # 8 = len("</think>")
+                    yield ("__think:done", True)
+                else:
+                    start = buf.find("<think>")
+                    if start == -1:
+                        yield (buf, False)
+                        buf = ""
+                    else:
+                        if start > 0:
+                            yield (buf[:start], False)
+                        buf = buf[start + 7:]          # 7 = len("<think>")
+                        in_think = True
+                        yield ("__think:start", True)
+
+    async def _gemini_stream(self, messages: list):
+        """
+        Stream a response from Gemini 2.0 Flash via the free REST API.
+        Requires GEMINI_API_KEY env var (free at aistudio.google.com).
+        Converts the OpenAI-format message list to a flat prompt Gemini understands,
+        including any tool results from the tool phase.
+        """
+        import json as _json
+        import aiohttp
+
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if not api_key:
+            return
+
+        system_msg = ""
+        history_parts: list[str] = []
+
+        for m in messages:
+            role    = m["role"]
+            content = m.get("content") or ""
+
+            if role == "system":
+                system_msg = content
+            elif role == "user":
+                history_parts.append(f"User: {content}")
+            elif role == "assistant" and not m.get("tool_calls"):
+                cleaned = self._strip_think(content)
+                if cleaned:
+                    history_parts.append(f"Assistant: {cleaned}")
+            elif role == "tool":
+                try:
+                    data = _json.loads(content)
+                    history_parts.append(f"[Tool result: {_json.dumps(data, ensure_ascii=False)[:600]}]")
+                except Exception:
+                    history_parts.append(f"[Tool result: {content[:600]}]")
+            # assistant messages with tool_calls are skipped (noise for Gemini)
+
+        if not history_parts:
+            return
+
+        full_prompt = "\n\n".join(history_parts) + "\n\nAssistant:"
+
+        body: dict = {
+            "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
+            "generationConfig": {
+                "temperature":    self.personality.get("temperature", 0.7),
+                "maxOutputTokens": MAX_TOKENS,
+            },
+        }
+        if system_msg:
+            body["system_instruction"] = {"parts": [{"text": system_msg}]}
+
+        url = (
+            "https://generativelanguage.googleapis.com/v1beta/models"
+            f"/gemini-2.0-flash:streamGenerateContent?key={api_key}&alt=sse"
+        )
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url, json=body,
+                timeout=aiohttp.ClientTimeout(total=60),
+            ) as resp:
+                if resp.status != 200:
+                    err = await resp.text()
+                    print(f"[Brain] Gemini API error {resp.status}: {err[:300]}")
+                    return
+                async for line_bytes in resp.content:
+                    line = line_bytes.decode("utf-8").strip()
+                    if not line.startswith("data:"):
+                        continue
+                    data_str = line[5:].strip()
+                    if not data_str or data_str == "[DONE]":
+                        continue
+                    try:
+                        data = _json.loads(data_str)
+                        parts = (
+                            data.get("candidates", [{}])[0]
+                                .get("content", {})
+                                .get("parts", [])
+                        )
+                        for part in parts:
+                            text = part.get("text", "")
+                            if text:
+                                yield text
+                    except Exception:
+                        pass
 
     # ── Reminder handling ──────────────────────────────────────────────────────
 

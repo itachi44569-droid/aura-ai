@@ -1,0 +1,32 @@
+{
+  "name": "Nova AI",
+  "short_name": "Nova",
+  "description": "Enterprise AI assistant with real-time tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050816",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "New Chat",
+      "url": "/",
+      "description": "Start a new conversation"
+    },
+    {
+      "name": "Admin Panel",
+      "url": "/admin",
+      "description": "Open admin dashboard"
+    }
+  ]
+}

@@ -388,6 +388,95 @@ async def wikipedia_search(query: str, sentences: int = 3) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
+# ── Web Page Reader (aiohttp + BeautifulSoup — free) ─────────────────────────
+
+@tool(
+    name="read_webpage",
+    description=(
+        "Fetch and read the full content of any webpage. Use when the user shares a URL "
+        "and wants Nova to read, summarize, or answer questions about it."
+    ),
+    parameters={
+        "url": {
+            "type": "string",
+            "description": "Full URL of the page to read e.g. 'https://example.com/article'",
+        },
+    },
+)
+async def read_webpage(url: str) -> dict:
+    try:
+        import re
+        import aiohttp
+        from bs4 import BeautifulSoup
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                url, headers=headers,
+                timeout=aiohttp.ClientTimeout(total=12),
+                allow_redirects=True,
+            ) as resp:
+                if resp.status != 200:
+                    return {"error": f"Page returned HTTP {resp.status}"}
+                ct = resp.headers.get("content-type", "")
+                if "html" not in ct and "text" not in ct:
+                    return {"error": f"URL is not an HTML page (content-type: {ct})"}
+                html = await resp.text(errors="replace")
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Strip noise elements
+        for tag in soup(["script", "style", "nav", "header", "footer",
+                          "aside", "noscript", "iframe", "form", "svg", "button"]):
+            tag.decompose()
+
+        # Strip elements whose class names suggest nav/ads/cookie banners
+        noise_patterns = ["navigation", "nav-", "footer", "sidebar",
+                          "advertisement", "cookie", "popup", "overlay", "modal"]
+        for el in soup.find_all(attrs={"class": True}):
+            classes = " ".join(el.get("class", []))
+            if any(p in classes.lower() for p in noise_patterns):
+                el.decompose()
+
+        title = soup.title.get_text(strip=True) if soup.title else ""
+
+        # Prefer a semantic main/article block; fall back to body
+        main = (
+            soup.find("main")
+            or soup.find("article")
+            or soup.find(id=lambda x: x and "content" in x.lower())
+            or soup.body
+        )
+        raw = (main or soup).get_text(separator="\n", strip=True)
+
+        # Collapse runs of blank lines
+        text = re.sub(r"\n{3,}", "\n\n", raw).strip()
+
+        MAX_CHARS = 6_000
+        truncated = len(text) > MAX_CHARS
+        if truncated:
+            text = text[:MAX_CHARS]
+
+        return {
+            "url":       url,
+            "title":     title,
+            "text":      text,
+            "chars":     len(text),
+            "truncated": truncated,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # ── Reminder (scheduler module handles the actual scheduling) ─────────────────
 
 @tool(
