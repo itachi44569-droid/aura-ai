@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Admin</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0f0f0f; color:#e8e8e8; min-height:100vh; }
+
+  .topbar { background:#111; border-bottom:1px solid #1e1e1e; padding:14px 24px; display:flex; align-items:center; gap:12px; }
+  .topbar h1 { font-size:15px; font-weight:600; }
+  .topbar span { font-size:12px; color:#555; }
+  .badge { background:#6366f1; color:#fff; font-size:11px; padding:2px 8px; border-radius:20px; }
+
+  .container { max-width:900px; margin:0 auto; padding:32px 24px; display:flex; flex-direction:column; gap:28px; }
+
+  .card { background:#111; border:1px solid #1e1e1e; border-radius:12px; overflow:hidden; }
+  .card-header { padding:16px 20px; border-bottom:1px solid #1e1e1e; display:flex; align-items:center; justify-content:space-between; }
+  .card-header h2 { font-size:14px; font-weight:600; }
+  .card-header p  { font-size:12px; color:#555; margin-top:2px; }
+  .card-body { padding:20px; display:flex; flex-direction:column; gap:12px; }
+
+  label { font-size:12px; color:#888; display:block; margin-bottom:4px; }
+  input, textarea, select {
+    width:100%; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:8px;
+    color:#e8e8e8; font-size:13px; padding:10px 12px; outline:none; font-family:inherit;
+    transition:border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color:#6366f1; }
+  textarea { resize:vertical; min-height:80px; }
+
+  .row { display:flex; gap:10px; }
+  .row > * { flex:1; }
+
+  button {
+    padding:9px 18px; border-radius:8px; font-size:13px; font-weight:500;
+    cursor:pointer; border:none; transition:all 0.15s;
+  }
+  .btn-primary { background:#6366f1; color:#fff; }
+  .btn-primary:hover { background:#5254cc; }
+  .btn-danger  { background:#2a1111; color:#f87171; border:1px solid #5a1a1a; }
+  .btn-danger:hover { background:#3a1515; }
+  .btn-sm { padding:5px 12px; font-size:12px; }
+
+  .result { font-size:12px; padding:10px 12px; border-radius:8px; border:1px solid #2a2a2a; background:#1a1a1a; word-break:break-all; }
+  .result.ok  { border-color:#166534; background:#052e16; color:#86efac; }
+  .result.err { border-color:#5a1a1a; background:#2a1111; color:#f87171; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; padding:8px 12px; font-size:11px; color:#555; font-weight:500; border-bottom:1px solid #1e1e1e; }
+  td { padding:10px 12px; border-bottom:1px solid #141414; vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  .key-text { font-family:monospace; font-size:11px; color:#a78bfa; word-break:break-all; }
+
+  .pill { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; }
+  .pill-green  { background:#052e16; color:#86efac; }
+  .pill-red    { background:#2a1111; color:#f87171; }
+  .pill-purple { background:#1e1b4b; color:#a78bfa; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+  .stat { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:10px; padding:16px; }
+  .stat-val { font-size:24px; font-weight:700; color:#fff; }
+  .stat-lbl { font-size:11px; color:#555; margin-top:2px; }
+
+  #lock-screen { position:fixed; inset:0; background:#0f0f0f; display:flex; align-items:center; justify-content:center; z-index:100; }
+  #lock-screen .box { background:#111; border:1px solid #1e1e1e; border-radius:16px; padding:36px 40px; width:100%; max-width:340px; display:flex; flex-direction:column; gap:16px; }
+  #lock-screen h2  { font-size:18px; font-weight:600; }
+  #lock-screen p   { font-size:13px; color:#555; }
+  #lock-err { font-size:12px; color:#f87171; display:none; }
+</style>
+</head>
+<body>
+
+<div id="lock-screen">
+  <div class="box">
+    <div>
+      <h2>Nova Admin</h2>
+      <p>Enter your admin password to continue.</p>
+    </div>
+    <div>
+      <label>Admin Password</label>
+      <input type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    </div>
+    <div id="lock-err">Wrong password.</div>
+    <button class="btn-primary" onclick="unlock()">Unlock</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <h1>Nova Admin</h1>
+    <span>Knowledge Base + API Keys</span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <a href="/" style="color:#555;font-size:12px;text-decoration:none">← Back to chat</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="card">
+      <div class="card-header"><div><h2>Overview</h2><p>Last 7 days</p></div><button class="btn-primary btn-sm" onclick="loadStats()">Refresh</button></div>
+      <div class="card-body">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Messages</div></div>
+          <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Unique Users</div></div>
+          <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">Avg Response (ms)</div></div>
+          <div class="stat"><div class="stat-val">—</div><div class="stat-lbl">API Keys</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Knowledge Base -->
+    <div class="card">
+      <div class="card-header"><div><h2>Knowledge Base</h2><p>Teach Nova anything — it will remember it in all chats</p></div></div>
+      <div class="card-body">
+
+        <div>
+          <label>Paste text / notes / FAQs</label>
+          <textarea id="kb-text" placeholder="Paste any text here — product info, FAQs, notes, anything..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="kb-source" placeholder="Label (e.g. 'product FAQ')" style="max-width:200px">
+            <button class="btn-primary" onclick="ingestText()">Add to Knowledge</button>
+          </div>
+          <div id="text-result" class="result" style="display:none;margin-top:8px"></div>
+        </div>
+
+        <hr style="border-color:#1e1e1e">
+
+        <div>
+          <label>Add from a URL (webpage or article)</label>
+          <div class="row">
+            <input id="kb-url" placeholder="https://example.com/about">
+            <button class="btn-primary" onclick="ingestUrl()" style="flex:0 0 auto">Fetch & Add</button>
+          </div>
+          <div id="url-result" class="result" style="display:none;margin-top:8px"></div>
+        </div>
+
+        <hr style="border-color:#1e1e1e">
+
+        <div>
+          <label>Upload a file (.txt, .pdf, .md, .json)</label>
+          <div class="row">
+            <input type="file" id="kb-file" accept=".txt,.pdf,.md,.json" style="cursor:pointer">
+            <button class="btn-primary" onclick="ingestFile()" style="flex:0 0 auto">Upload</button>
+          </div>
+          <div id="file-result" class="result" style="display:none;margin-top:8px"></div>
+        </div>
+
+        <hr style="border-color:#1e1e1e">
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <label style="margin:0">Ingested Sources</label>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-primary" onclick="loadSources()">Refresh</button>
+              <button class="btn-sm btn-danger" onclick="clearKnowledge()">Clear All</button>
+            </div>
+          </div>
+          <div id="sources-list" style="font-size:12px;color:#555">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Keys -->
+    <div class="card">
+      <div class="card-header"><div><h2>API Keys</h2><p>Generate keys to sell — paid users get higher limits</p></div></div>
+      <div class="card-body">
+
+        <div class="row">
+          <div>
+            <label>Customer label</label>
+            <input id="key-label" placeholder="e.g. John Doe, @username">
+          </div>
+          <div>
+            <label>Daily message limit (0 = unlimited)</label>
+            <input id="key-limit" type="number" value="0" min="0">
+          </div>
+          <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+            <button class="btn-primary" onclick="genKey()">Generate Key</button>
+          </div>
+        </div>
+        <div id="key-result" class="result" style="display:none"></div>
+
+        <hr style="border-color:#1e1e1e">
+
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <label style="margin:0">Active Keys</label>
+            <button class="btn-sm btn-primary" onclick="loadKeys()">Refresh</button>
+          </div>
+          <div id="keys-table">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to use keys -->
+    <div class="card">
+      <div class="card-header"><div><h2>How customers use their key</h2></div></div>
+      <div class="card-body">
+        <p style="font-size:13px;color:#888;line-height:1.7">
+          Tell your customer to include their key in the chat request. If they use the website, they paste it in the "API Key" field.<br>
+          If they call the API directly:
+        </p>
+        <pre style="background:#1a1a1a;padding:12px;border-radius:8px;font-size:12px;color:#a78bfa;margin-top:8px;overflow-x:auto">POST /chat
+{
+  "user_id": "their_id",
+  "message": "Hello!",
+  "api_key": "nb-xxxxxxxxxxxx"
+}</pre>
+        <p style="font-size:12px;color:#555;margin-top:8px">Free users (no key) are limited to 20 messages/day. Paid keys bypass this.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let ADMIN_PW = '';
+
+function unlock() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  ADMIN_PW = pw;
+  // Test it
+  fetch('/admin/stats', { headers: { 'X-Admin-Password': pw } })
+    .then(r => {
+      if (r.status === 401) {
+        document.getElementById('lock-err').style.display = 'block';
+        ADMIN_PW = '';
+      } else {
+        document.getElementById('lock-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        init();
+      }
+    })
+    .catch(() => {
+      document.getElementById('lock-err').style.display = 'block';
+    });
+}
+
+function headers() {
+  return { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PW };
+}
+
+async function init() {
+  loadStats();
+  loadSources();
+  loadKeys();
+}
+
+async function loadStats() {
+  const r = await fetch('/stats', { headers: headers() });
+  const d = await r.json();
+  const keysR = await fetch('/admin/keys', { headers: headers() });
+  const keysD = await keysR.json();
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat"><div class="stat-val">${d.total_messages ?? 0}</div><div class="stat-lbl">Messages</div></div>
+    <div class="stat"><div class="stat-val">${d.unique_users ?? 0}</div><div class="stat-lbl">Unique Users</div></div>
+    <div class="stat"><div class="stat-val">${Math.round(d.avg_latency_ms ?? 0)}</div><div class="stat-lbl">Avg Response (ms)</div></div>
+    <div class="stat"><div class="stat-val">${keysD.keys?.length ?? 0}</div><div class="stat-lbl">API Keys</div></div>
+  `;
+}
+
+async function ingestText() {
+  const text = document.getElementById('kb-text').value.trim();
+  const source = document.getElementById('kb-source').value.trim() || 'manual';
+  const el = document.getElementById('text-result');
+  if (!text) return;
+  el.style.display = 'block'; el.className = 'result'; el.textContent = 'Adding...';
+  const r = await fetch('/ingest/text', { method:'POST', headers: headers(), body: JSON.stringify({text, source}) });
+  const d = await r.json();
+  if (r.ok) { el.className='result ok'; el.textContent = `✓ Added ${d.chunks_ingested} chunks from "${source}"`; document.getElementById('kb-text').value=''; loadSources(); }
+  else       { el.className='result err'; el.textContent = 'Error: ' + (d.detail || JSON.stringify(d)); }
+}
+
+async function ingestUrl() {
+  const url = document.getElementById('kb-url').value.trim();
+  const el = document.getElementById('url-result');
+  if (!url) return;
+  el.style.display='block'; el.className='result'; el.textContent = 'Fetching...';
+  const r = await fetch('/ingest/url', { method:'POST', headers: headers(), body: JSON.stringify({url}) });
+  const d = await r.json();
+  if (r.ok) { el.className='result ok'; el.textContent = `✓ Added ${d.chunks_ingested} chunks from ${url}`; document.getElementById('kb-url').value=''; loadSources(); }
+  else       { el.className='result err'; el.textContent = 'Error: ' + (d.detail || JSON.stringify(d)); }
+}
+
+async function ingestFile() {
+  const fileEl = document.getElementById('kb-file');
+  const el = document.getElementById('file-result');
+  if (!fileEl.files[0]) return;
+  el.style.display='block'; el.className='result'; el.textContent='Uploading...';
+  const fd = new FormData();
+  fd.append('file', fileEl.files[0]);
+  const r = await fetch('/ingest/file', { method:'POST', headers: {'X-Admin-Password': ADMIN_PW}, body: fd });
+  const d = await r.json();
+  if (r.ok) { el.className='result ok'; el.textContent=`✓ Added ${d.chunks_ingested} chunks from ${d.filename}`; fileEl.value=''; loadSources(); }
+  else       { el.className='result err'; el.textContent='Error: '+(d.detail||JSON.stringify(d)); }
+}
+
+async function loadSources() {
+  const r = await fetch('/sources', { headers: headers() });
+  const d = await r.json();
+  const el = document.getElementById('sources-list');
+  if (!d.sources?.length) { el.textContent = 'No knowledge added yet.'; return; }
+  el.innerHTML = d.sources.map(s => `<span class="pill pill-purple" style="margin:2px">${s}</span>`).join(' ');
+}
+
+async function clearKnowledge() {
+  if (!confirm('Clear ALL knowledge? This cannot be undone.')) return;
+  await fetch('/knowledge', { method:'DELETE', headers: headers() });
+  loadSources();
+}
+
+async function genKey() {
+  const label = document.getElementById('key-label').value.trim();
+  const limit = parseInt(document.getElementById('key-limit').value) || 0;
+  const el = document.getElementById('key-result');
+  if (!label) { el.style.display='block'; el.className='result err'; el.textContent='Enter a customer label.'; return; }
+  const r = await fetch('/admin/keys/generate', { method:'POST', headers: headers(), body: JSON.stringify({label, daily_limit: limit}) });
+  const d = await r.json();
+  if (r.ok) { el.style.display='block'; el.className='result ok'; el.textContent=`✓ Key: ${d.key}  (Copy and send to customer)`; document.getElementById('key-label').value=''; loadKeys(); }
+  else       { el.style.display='block'; el.className='result err'; el.textContent='Error: '+(d.detail||JSON.stringify(d)); }
+}
+
+async function loadKeys() {
+  const r = await fetch('/admin/keys', { headers: headers() });
+  const d = await r.json();
+  const el = document.getElementById('keys-table');
+  if (!d.keys?.length) { el.innerHTML='<p style="font-size:12px;color:#555">No keys yet. Generate one above.</p>'; return; }
+  el.innerHTML = `<table>
+    <tr><th>Key</th><th>Label</th><th>Daily Limit</th><th>Used Today</th><th>Status</th><th></th></tr>
+    ${d.keys.map(k=>`<tr>
+      <td><span class="key-text">${k.key}</span></td>
+      <td style="color:#aaa">${k.label}</td>
+      <td style="color:#aaa">${k.daily_limit===0?'Unlimited':k.daily_limit}</td>
+      <td style="color:#aaa">${k.used_today}</td>
+      <td><span class="pill ${k.active?'pill-green':'pill-red'}">${k.active?'Active':'Revoked'}</span></td>
+      <td>${k.active?`<button class="btn-sm btn-danger" onclick="revokeKey('${k.key}')">Revoke</button>`:''}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function revokeKey(key) {
+  if (!confirm('Revoke this key?')) return;
+  await fetch('/admin/keys/revoke', { method:'POST', headers: headers(), body: JSON.stringify({key}) });
+  loadKeys();
+}
+</script>
+</body>
+</html>

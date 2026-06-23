@@ -210,7 +210,8 @@
     margin: 0 auto 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   #user-id-bar label { font-size: 12px; color: #555; }
@@ -224,6 +225,21 @@
     outline: none;
     padding: 2px 4px;
     width: 120px;
+  }
+
+  #user-id-bar .sep { color: #2a2a2a; }
+
+  #api-key-input {
+    width: 200px;
+    color: #a78bfa;
+  }
+
+  .tier-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #1e1b4b;
+    color: #a78bfa;
   }
 
   .error-bubble {
@@ -258,6 +274,10 @@
   <div id="user-id-bar">
     <label>Session:</label>
     <input type="text" id="user-id" value="" placeholder="auto">
+    <span class="sep">|</span>
+    <label>API Key:</label>
+    <input type="text" id="api-key-input" class="api-key-input" placeholder="nb-xxxx (optional)" autocomplete="off">
+    <span id="tier-badge" style="display:none" class="tier-badge">paid</span>
   </div>
   <div class="input-row">
     <textarea id="input" placeholder="Message AI Brain..." rows="1"></textarea>
@@ -271,10 +291,16 @@
 </footer>
 
 <script>
-const API = '';  // same origin — served by FastAPI
+const API = '';
 let userId = 'user_' + Math.random().toString(36).slice(2, 8);
 document.getElementById('user-id').value = userId;
 document.getElementById('user-id').addEventListener('change', e => { userId = e.target.value || userId; });
+
+const apiKeyEl = document.getElementById('api-key-input');
+const tierBadge = document.getElementById('tier-badge');
+apiKeyEl.addEventListener('input', () => {
+  tierBadge.style.display = apiKeyEl.value.trim().startsWith('nb-') ? 'inline' : 'none';
+});
 
 const messagesEl = document.getElementById('messages');
 const inputEl    = document.getElementById('input');
@@ -346,10 +372,13 @@ async function send() {
   const typing = addTyping();
 
   try {
+    const apiKey = apiKeyEl.value.trim();
+    const body = { user_id: userId, message: text };
+    if (apiKey) body.api_key = apiKey;
     const res = await fetch(API + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, message: text })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     typing.remove();
