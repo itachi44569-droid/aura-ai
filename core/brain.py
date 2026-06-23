@@ -55,6 +55,7 @@ class Brain:
         self.client_id   = client_id
 
         api_key      = os.getenv("GROQ_API_KEY", "")
+        print(f"[Brain] GROQ_API_KEY present: {bool(api_key)} len={len(api_key)}")
         self._groq   = AsyncGroq(api_key=api_key)
         self._analytics = Analytics()
         self._router    = AgentRouter(self._groq)
@@ -240,10 +241,13 @@ class Brain:
         rag_context = ""
         if self.rag:
             try:
+                print("[Brain] Running hybrid RAG search...")
                 from .hybrid_rag import HybridRAG
                 hybrid = HybridRAG(self.rag)
                 docs   = await hybrid.search(user_msg, user_id=self.client_id, top_k=3)
-            except Exception:
+                print(f"[Brain] Hybrid RAG returned {len(docs)} docs")
+            except Exception as e:
+                print(f"[Brain] Hybrid RAG failed ({e}), trying standard RAG...")
                 docs = await self.rag.search(user_msg, client_id=self.client_id, top_k=3)
             if docs:
                 rag_context = "\n\n[KNOWLEDGE BASE]\n" + "\n---\n".join(docs)
@@ -298,7 +302,8 @@ class Brain:
 
             try:
                 resp = await self._groq.chat.completions.create(**kwargs)
-            except Exception:
+            except Exception as e:
+                print(f"[Brain] tool_phase Groq error: {type(e).__name__}: {e}")
                 break
 
             msg = resp.choices[0].message
@@ -346,7 +351,8 @@ class Brain:
                 )
                 content = resp.choices[0].message.content
                 return content or "I'm sorry, I couldn't generate a response."
-            except Exception:
+            except Exception as e:
+                print(f"[Brain] LLM error with {m}: {type(e).__name__}: {e}")
                 continue
         return "I'm having trouble right now. Please try again in a moment."
 
