@@ -63,6 +63,33 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     async def health():
         return {"status": "ok", "model": "llama-3.3-70b-versatile", "tools": len(brain.tools)}
 
+    @app.get("/debug/groq")
+    async def debug_groq():
+        """Test Groq API directly — returns the error message if it fails."""
+        import os
+        from groq import AsyncGroq
+        key = os.getenv("GROQ_API_KEY", "")
+        result = {
+            "key_present": bool(key),
+            "key_length": len(key),
+            "key_prefix": key[:8] if key else "",
+        }
+        try:
+            client = AsyncGroq(api_key=key)
+            resp = await client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": "Say hi"}],
+                max_tokens=10,
+                temperature=0.0,
+            )
+            result["groq_status"] = "ok"
+            result["groq_response"] = resp.choices[0].message.content
+        except Exception as e:
+            result["groq_status"] = "error"
+            result["groq_error_type"] = type(e).__name__
+            result["groq_error"] = str(e)
+        return result
+
     @app.get("/stats")
     async def stats():
         summary = brain.get_stats()
