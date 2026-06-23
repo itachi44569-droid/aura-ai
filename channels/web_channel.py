@@ -59,6 +59,22 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
 
     # ── Endpoints ──────────────────────────────────────────────────────────────
 
+    @app.get("/")
+    async def root():
+        name = brain.personality.get("name", "AI Brain")
+        return {
+            "name": name,
+            "status": "online",
+            "endpoints": {
+                "chat":    "POST /chat  — send a message",
+                "health":  "GET  /health",
+                "stats":   "GET  /stats",
+                "docs":    "GET  /docs  — interactive Swagger UI",
+                "ingest":  "POST /ingest/text | /ingest/url | /ingest/file",
+                "ws":      "WS   /ws/{user_id}  — streaming",
+            }
+        }
+
     @app.get("/health")
     async def health():
         return {"status": "ok", "model": "llama-3.3-70b-versatile", "tools": len(brain.tools)}
