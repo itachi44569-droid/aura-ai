@@ -152,26 +152,31 @@ class Brain:
         _, specialist_ext = await self._router.route(user_msg)
         messages     = await self._build_messages(user_id, user_msg, specialist_ext)
         tool_schemas = [t.schema for t in self.tools] if self.tools else None
-        messages     = await self._tool_phase(messages, tool_schemas)
+        messages, direct = await self._tool_phase(messages, tool_schemas)
 
         full_response = ""
-        try:
-            stream = await self._groq.chat.completions.create(
-                model      = MODEL_STRONG,
-                messages   = messages,
-                max_tokens = MAX_TOKENS,
-                temperature= self.personality.get("temperature", 0.7),
-                stream     = True,
-            )
-            async for chunk in stream:
-                delta = chunk.choices[0].delta.content or ""
-                if delta:
-                    full_response += delta
-                    yield delta
-        except Exception:
-            result = await self._call_llm(messages, MODEL_FAST)
-            full_response = result
-            yield result
+        if direct:
+            # Model answered directly in tool phase — stream the cached text
+            full_response = direct
+            yield direct
+        else:
+            try:
+                stream = await self._groq.chat.completions.create(
+                    model      = MODEL_STRONG,
+                    messages   = messages,
+                    max_tokens = MAX_TOKENS,
+                    temperature= self.personality.get("temperature", 0.7),
+                    stream     = True,
+                )
+                async for chunk in stream:
+                    delta = chunk.choices[0].delta.content or ""
+                    if delta:
+                        full_response += delta
+                        yield delta
+            except Exception:
+                result = await self._call_llm(messages, MODEL_FAST)
+                full_response = result
+                yield result
 
         # Post-stream: memory + analytics
         self.memory.add_exchange(user_id, user_msg, full_response)
@@ -285,15 +290,24 @@ class Brain:
     # ── Agentic loop ───────────────────────────────────────────────────────────
 
     async def _agent_loop(self, messages: list, tool_schemas) -> str:
-        messages = await self._tool_phase(messages, tool_schemas)
+        messages, direct = await self._tool_phase(messages, tool_schemas)
+        if direct:
+            return direct  # model answered directly — no extra LLM call needed
         return await self._call_llm(messages, MODEL_STRONG)
 
-    async def _tool_phase(self, messages: list, tool_schemas) -> list:
+    async def _tool_phase(self, messages: list, tool_schemas) -> tuple[list, str]:
+        """
+        Returns (messages, direct_response).
+        direct_response is non-empty when the model answered without using tools,
+        in which case no further LLM call is needed.
+        After tool calls, direct_response is "" and _call_llm should summarize.
+        """
+        tools_were_called = False
         for _ in range(MAX_TOOL_LOOPS):
             kwargs = {
                 "model":       MODEL_STRONG,
                 "messages":    messages,
-                "max_tokens":  512,
+                "max_tokens":  MAX_TOKENS,
                 "temperature": self.personality.get("temperature", 0.7),
             }
             if tool_schemas:
@@ -308,10 +322,15 @@ class Brain:
 
             msg = resp.choices[0].message
             if not msg.tool_calls:
-                if msg.content:
-                    messages.append({"role": "assistant", "content": msg.content})
-                break
+                # Model gave a direct answer (no tools)
+                content = msg.content or ""
+                if not tools_were_called:
+                    # No tools at all — return as direct response
+                    return messages, content
+                # Tools ran earlier; model just summarized — return its summary directly
+                return messages, content
 
+            tools_were_called = True
             messages.append({
                 "role":       "assistant",
                 "content":    msg.content or "",
@@ -338,7 +357,7 @@ class Brain:
                     "content":      json.dumps(result),
                 })
 
-        return messages
+        return messages, ""
 
     async def _call_llm(self, messages: list, model: str) -> str:
         for m in [model, MODEL_FAST]:
