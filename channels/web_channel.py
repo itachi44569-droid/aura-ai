@@ -11,13 +11,18 @@ Endpoints:
   WS   /ws/{user_id}   — websocket for streaming responses
 """
 import os
+from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 
 from core.brain import Brain
 from core.rag   import RAG
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
@@ -61,19 +66,12 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
 
     @app.get("/")
     async def root():
-        name = brain.personality.get("name", "AI Brain")
-        return {
-            "name": name,
-            "status": "online",
-            "endpoints": {
-                "chat":    "POST /chat  — send a message",
-                "health":  "GET  /health",
-                "stats":   "GET  /stats",
-                "docs":    "GET  /docs  — interactive Swagger UI",
-                "ingest":  "POST /ingest/text | /ingest/url | /ingest/file",
-                "ws":      "WS   /ws/{user_id}  — streaming",
-            }
-        }
+        if (STATIC_DIR / "index.html").exists():
+            return FileResponse(STATIC_DIR / "index.html")
+        return {"name": brain.personality.get("name", "AI Brain"), "status": "online"}
+
+    if STATIC_DIR.exists():
+        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
     @app.get("/health")
     async def health():
