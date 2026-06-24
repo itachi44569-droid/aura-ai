@@ -28,7 +28,7 @@ import os
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
@@ -43,6 +43,7 @@ from core.auth import (
     init_auth, register_user, login_user, validate_token, delete_session,
     list_users, deactivate_user, activate_user, get_settings, update_settings,
     save_conversation, list_conversations, get_conversation, delete_conversation,
+    share_conversation, get_shared_conversation,
 )
 
 STATIC_DIR   = Path(__file__).parent / "static"
@@ -570,6 +571,73 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         user = _auth_user(authorization)
         delete_conversation(conv_id, user["id"])
         return {"ok": True}
+
+    @app.post("/history/{conv_id}/share")
+    async def history_share(conv_id: str, authorization: Optional[str] = Header(None)):
+        user = _auth_user(authorization)
+        result = share_conversation(conv_id, user["id"])
+        if not result["ok"]:
+            raise HTTPException(status_code=404, detail=result.get("error", "Not found"))
+        return result
+
+    @app.get("/s/{token}")
+    async def shared_view(token: str):
+        import json as _json
+        conv = get_shared_conversation(token)
+        if not conv:
+            return HTMLResponse("<html><body style='font-family:sans-serif;text-align:center;padding:80px;background:#050816;color:#F8FAFC'><h2>Link not found</h2><br><a href='/' style='color:#818CF8'>Start a new chat →</a></body></html>", status_code=404)
+        cfg = get_settings()
+        bot_name = cfg.get("bot_name", "Nova AI")
+        logo = cfg.get("logo_emoji", "✦")
+        color = cfg.get("primary_color", "#4F46E5")
+        msgs_json = _json.dumps(conv["messages"])
+        title_safe = conv["title"].replace("<","&lt;").replace(">","&gt;")
+        html = f"""<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title_safe} — {bot_name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:'Inter',sans-serif;background:#050816;color:#F8FAFC;min-height:100vh;padding:24px 16px 60px}}
+.hdr{{max-width:720px;margin:0 auto 28px;display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08)}}
+.logo-box{{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,{color},{color}88);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}}
+.hdr-title{{font-size:15px;font-weight:600}}
+.hdr-sub{{font-size:11px;color:#64748B;margin-top:2px}}
+.msgs{{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}}
+.row{{display:flex;gap:10px;align-items:flex-start}}
+.row.user{{flex-direction:row-reverse}}
+.av{{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:rgba(255,255,255,.06)}}
+.bubble{{max-width:84%;padding:11px 15px;border-radius:14px;font-size:14px;line-height:1.65;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}}
+.row.user .bubble{{background:rgba(79,70,229,.18);border-color:rgba(79,70,229,.28);text-align:left}}
+.bubble img{{max-width:100%;border-radius:10px;margin:6px 0;display:block}}
+.bubble pre{{background:#0D1117;padding:12px;border-radius:8px;overflow-x:auto;font-size:12px;margin:8px 0;line-height:1.5}}
+.bubble code:not(pre code){{background:rgba(79,70,229,.18);padding:2px 5px;border-radius:4px;font-size:12px}}
+.cta{{text-align:center;margin:40px 0 0}}
+.cta a{{display:inline-block;padding:12px 28px;border-radius:24px;background:linear-gradient(135deg,{color},{color}cc);color:#fff;text-decoration:none;font-weight:600;font-size:14px}}
+</style></head><body>
+<div class="hdr">
+  <div class="logo-box">{logo}</div>
+  <div><div class="hdr-title">{title_safe}</div><div class="hdr-sub">Shared conversation · {bot_name}</div></div>
+</div>
+<div class="msgs" id="msgs"></div>
+<div class="cta"><a href="/">Start your own chat →</a></div>
+<script>
+const msgs = {msgs_json};
+const el = document.getElementById('msgs');
+msgs.forEach(m => {{
+  const ur = document.createElement('div'); ur.className='row user';
+  ur.innerHTML='<div class="av">👤</div><div class="bubble"></div>';
+  ur.querySelector('.bubble').textContent = m.u || '';
+  el.appendChild(ur);
+  const ar = document.createElement('div'); ar.className='row';
+  ar.innerHTML='<div class="av">{logo}</div><div class="bubble"></div>';
+  ar.querySelector('.bubble').innerHTML = marked.parse(m.a||'');
+  el.appendChild(ar);
+}});
+</script></body></html>"""
+        return HTMLResponse(html)
 
     # ── Debug (remove in production) ──────────────────────────────────────────
 

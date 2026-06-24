@@ -160,6 +160,21 @@ textarea#input::placeholder { color:var(--text4); }
 
 @keyframes recPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.35)}}
 .ib-btn.recording{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#ef4444}
+/* Voice waveform */
+.waveform{display:none;align-items:flex-end;gap:2px;height:20px;padding:0 2px}
+.waveform.show{display:flex}
+.wf-bar{width:3px;background:#ef4444;border-radius:2px;min-height:3px;transition:height .06s ease}
+/* AI-generated images in bubbles */
+.bubble.ai img{max-width:100%;border-radius:12px;margin:8px 0;display:block;border:1px solid rgba(255,255,255,.08)}
+/* Share modal */
+.share-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.share-box{background:#0D1426;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;width:min(92vw,420px);display:flex;flex-direction:column;gap:14px}
+.share-box h3{font-size:15px;font-weight:600}
+.share-url{display:flex;gap:8px;align-items:center}
+.share-url input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);font-size:12px;font-family:monospace}
+.share-copy-btn{padding:8px 16px;border-radius:8px;background:var(--indigo);border:none;color:#fff;font:600 12px 'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.share-copy-btn:hover{filter:brightness(1.1)}
+.share-close{align-self:flex-end;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:0}
 .img-bubble{max-width:220px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
 .img-bubble img{width:100%;display:block;border-radius:11px}
 .img-caption{font-size:12px;color:rgba(255,255,255,.7);padding:5px 8px 2px}
@@ -316,6 +331,19 @@ textarea#input::placeholder { color:var(--text4); }
     </header>
 
     <!-- PWA install banner — shown by JS when browser fires beforeinstallprompt -->
+    <!-- Share modal -->
+    <div class="share-modal" id="share-modal" style="display:none" onclick="if(event.target===this)closeShare()">
+      <div class="share-box">
+        <button class="share-close" onclick="closeShare()">✕</button>
+        <h3>🔗 Share this conversation</h3>
+        <p style="font-size:12px;color:var(--text2);margin:0">Anyone with this link can read the conversation (read-only).</p>
+        <div class="share-url">
+          <input id="share-url-input" type="text" readonly placeholder="Generating link…" onclick="this.select()">
+          <button class="share-copy-btn" id="share-copy-btn" onclick="copyShareUrl()">Copy</button>
+        </div>
+      </div>
+    </div>
+
     <div class="install-banner" id="install-banner">
       <div style="font-size:22px;flex-shrink:0">📲</div>
       <div class="install-banner-text">
@@ -360,9 +388,9 @@ textarea#input::placeholder { color:var(--text4); }
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
           </button>
           <textarea id="input" placeholder="Ask Nova anything — weather, prices, news, math…" rows="1"></textarea>
-          <button class="ib-btn" id="mic-btn" title="Hold to record voice" onclick="toggleVoice()">
+          <button class="ib-btn" id="mic-btn" title="Click to record voice" onclick="toggleVoice()">
             <svg id="mic-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-            <span id="rec-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#ef4444;animation:recPulse 1s infinite"></span>
+            <div class="waveform" id="waveform"><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span></div>
           </button>
           <button class="send-btn" id="send" onclick="send()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -624,9 +652,12 @@ async function loadServerHistory() {
     const el = document.getElementById('hist');
     if (!convs.length) { renderHist(); return; }
     el.innerHTML = convs.map(c =>
-      `<div class="sb-item" style="justify-content:space-between" onmouseenter="this.querySelector('.del-btn').style.display='flex'" onmouseleave="this.querySelector('.del-btn').style.display='none'">
+      `<div class="sb-item" style="justify-content:space-between" onmouseenter="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='flex')" onmouseleave="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='none')">
         <span onclick="loadServerConv('${_esc(c.id)}')" style="flex:1;display:flex;align-items:center;gap:8px;overflow:hidden"><span class="sb-icon">☁️</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc(c.title)}</span></span>
-        <span class="del-btn" style="display:none;flex-shrink:0;width:18px;height:18px;align-items:center;justify-content:center;border-radius:4px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:11px;cursor:pointer" onclick="deleteServerConv('${_esc(c.id)}')">✕</span>
+        <span class="sb-action" style="display:none;flex-shrink:0;gap:4px;align-items:center">
+          <span title="Share" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:10px;cursor:pointer" onclick="shareConv('${_esc(c.id)}')">🔗</span>
+          <span title="Delete" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:11px;cursor:pointer" onclick="deleteServerConv('${_esc(c.id)}')">✕</span>
+        </span>
       </div>`
     ).join('');
   } catch { renderHist(); }
@@ -877,6 +908,7 @@ async function handleDocumentPick(input) {
 
 // ── Voice recording ────────────────────────────────────────
 let mediaRec = null, audioChunks = [], isRecording = false;
+let _audioCtx = null, _analyser = null, _waveRaf = null;
 
 async function toggleVoice() {
   if (isRecording) { stopVoice(); return; }
@@ -884,7 +916,6 @@ async function toggleVoice() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioChunks = [];
-    // pick a mime type the browser supports
     const mime = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4']
       .find(m => MediaRecorder.isTypeSupported(m)) || '';
     mediaRec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
@@ -894,7 +925,24 @@ async function toggleVoice() {
     isRecording = true;
     document.getElementById('mic-btn').classList.add('recording');
     document.getElementById('mic-icon').style.display = 'none';
-    document.getElementById('rec-dot').style.display = 'inline-block';
+    const waveEl = document.getElementById('waveform');
+    waveEl.classList.add('show');
+    // Audio-reactive waveform via AnalyserNode
+    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    _analyser = _audioCtx.createAnalyser();
+    _analyser.fftSize = 32;
+    _audioCtx.createMediaStreamSource(stream).connect(_analyser);
+    const bars = waveEl.querySelectorAll('.wf-bar');
+    const data = new Uint8Array(_analyser.frequencyBinCount);
+    function animWave() {
+      _waveRaf = requestAnimationFrame(animWave);
+      _analyser.getByteFrequencyData(data);
+      bars.forEach((b, i) => {
+        const v = (data[i] || 0) / 255;
+        b.style.height = Math.max(3, Math.round(v * 18)) + 'px';
+      });
+    }
+    animWave();
     stxt.textContent = '🎤 Recording… click mic to stop';
   } catch (err) {
     addBubble('error', '⚠ Mic access denied. Allow microphone in your browser settings.');
@@ -904,9 +952,13 @@ async function toggleVoice() {
 function stopVoice() {
   if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop();
   isRecording = false;
+  if (_waveRaf) { cancelAnimationFrame(_waveRaf); _waveRaf = null; }
+  if (_audioCtx) { _audioCtx.close(); _audioCtx = null; _analyser = null; }
   document.getElementById('mic-btn').classList.remove('recording');
-  document.getElementById('mic-icon').style.display = 'block';
-  document.getElementById('rec-dot').style.display = 'none';
+  document.getElementById('mic-icon').style.display = '';
+  const waveEl = document.getElementById('waveform');
+  waveEl.classList.remove('show');
+  waveEl.querySelectorAll('.wf-bar').forEach(b => b.style.height = '');
   stxt.textContent = 'Transcribing…';
 }
 
@@ -1038,6 +1090,38 @@ document.getElementById('install-dismiss').addEventListener('click', () => {
 // Also show banner if already installed check fails (standalone = already installed)
 if (window.matchMedia('(display-mode: standalone)').matches) {
   document.getElementById('install-banner').style.display = 'none';
+}
+
+// ── Share conversation ──────────────────────────────────────
+async function shareConv(convId) {
+  const modal = document.getElementById('share-modal');
+  const urlInput = document.getElementById('share-url-input');
+  const copyBtn = document.getElementById('share-copy-btn');
+  urlInput.value = 'Generating link…';
+  copyBtn.textContent = 'Copy';
+  modal.style.display = 'flex';
+  try {
+    const res = await fetch(`/history/${convId}/share`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _authToken }
+    });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    urlInput.value = `${location.origin}/s/${data.token}`;
+  } catch {
+    urlInput.value = 'Error generating link — are you logged in?';
+  }
+}
+function closeShare() {
+  document.getElementById('share-modal').style.display = 'none';
+}
+function copyShareUrl() {
+  const input = document.getElementById('share-url-input');
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = document.getElementById('share-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }).catch(() => { input.select(); document.execCommand('copy'); });
 }
 
 loadServerHistory(); connect(); inp.focus();

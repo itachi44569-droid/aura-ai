@@ -477,6 +477,36 @@ async def read_webpage(url: str) -> dict:
         return {"error": str(e)}
 
 
+# ── Image Generation (Pollinations.ai — free, no API key) ────────────────────
+
+@tool(
+    name="generate_image",
+    description=(
+        "Generate an image from a text description. Use whenever the user asks to create, draw, "
+        "generate, make, paint, or visualise an image, picture, photo, artwork, or illustration. "
+        "Return the markdown image tag in your response so the image renders inline."
+    ),
+    parameters={
+        "prompt":  {"type":"string",  "description":"Detailed visual description of the image"},
+        "width":   {"type":"integer", "description":"Width in pixels (256-1024, default 768)"},
+        "height":  {"type":"integer", "description":"Height in pixels (256-1024, default 768)"},
+    },
+    required=["prompt"],
+)
+async def generate_image(prompt: str, width: int = 768, height: int = 768) -> dict:
+    import urllib.parse, time
+    w = max(256, min(1024, width))
+    h = max(256, min(1024, height))
+    seed = int(time.time()) % 100000
+    encoded = urllib.parse.quote(prompt)
+    url = f"https://image.pollinations.ai/prompt/{encoded}?width={w}&height={h}&nologo=true&seed={seed}"
+    return {
+        "image_url": url,
+        "prompt":    prompt,
+        "display":   f"![{prompt}]({url})",
+        "note":      "Include the display markdown verbatim in your response so the image renders.",
+    }
+
 # ── Reminder (scheduler module handles the actual scheduling) ─────────────────
 
 @tool(

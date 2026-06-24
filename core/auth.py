@@ -55,6 +55,12 @@ def init_auth():
                 updated_at TEXT    NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_conv_user ON conversations(user_id, updated_at);
+            CREATE TABLE IF NOT EXISTS shared_conversations (
+                token      TEXT    PRIMARY KEY,
+                title      TEXT    NOT NULL DEFAULT 'Shared Chat',
+                messages   TEXT    NOT NULL DEFAULT '[]',
+                created_at TEXT    NOT NULL
+            );
         """)
         for k, v in DEFAULT_SETTINGS.items():
             c.execute(
@@ -220,6 +226,39 @@ def get_conversation(conv_id: str, user_id: int) -> dict | None:
             row = c.execute(
                 "SELECT * FROM conversations WHERE id=? AND user_id=?",
                 (conv_id, user_id)
+            ).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        d["messages"] = json.loads(d["messages"])
+        return d
+    except Exception:
+        return None
+
+
+def share_conversation(conv_id: str, user_id: int) -> dict:
+    conv = get_conversation(conv_id, user_id)
+    if not conv:
+        return {"ok": False, "error": "Conversation not found"}
+    token = secrets.token_urlsafe(16)
+    try:
+        with sqlite3.connect(DB) as c:
+            c.execute(
+                "INSERT INTO shared_conversations (token, title, messages, created_at) VALUES (?,?,?,?)",
+                (token, conv["title"], json.dumps(conv["messages"], ensure_ascii=False), datetime.utcnow().isoformat()),
+            )
+            c.commit()
+        return {"ok": True, "token": token}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+def get_shared_conversation(token: str) -> dict | None:
+    try:
+        with sqlite3.connect(DB) as c:
+            c.row_factory = sqlite3.Row
+            row = c.execute(
+                "SELECT * FROM shared_conversations WHERE token=?", (token,)
             ).fetchone()
         if not row:
             return None
