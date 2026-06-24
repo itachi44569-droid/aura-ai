@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova AI — The Most Beautiful AI Chatbot. Deploy Yours Today.</title>
+<meta name="description" content="Own the most premium AI chat interface ever built. Real-time web, voice, image generation, 9 languages, aurora UI. Complete source code — $79.">
+<meta property="og:title" content="Nova AI — Deploy Your Own Premium AI Chatbot">
+<meta property="og:description" content="Real-time web search, voice, image generation, 9 languages, spring cursor, particles, command palette. Complete source code template — $79.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#030711;
+  --indigo:#5B52F0;
+  --violet:#8B5CF6;
+  --pink:#EC4899;
+  --cyan:#06B6D4;
+  --text:#F1F5F9;
+  --text2:#94A3B8;
+  --text3:#475569;
+  --glass:rgba(255,255,255,.04);
+  --glass-b:rgba(255,255,255,.07);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.6}
+
+/* ── Aurora background ─────────────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#0a0720 0%,#030712 60%,#020510 100%);pointer-events:none}
+.orb{position:absolute;border-radius:50%;will-change:transform}
+.o1{width:900px;height:900px;background:radial-gradient(circle,rgba(91,82,240,.32) 0%,rgba(91,82,240,.08) 45%,transparent 70%);filter:blur(80px);top:-300px;left:-200px;animation:d1 22s ease-in-out infinite}
+.o2{width:700px;height:700px;background:radial-gradient(circle,rgba(168,85,247,.28) 0%,transparent 70%);filter:blur(80px);bottom:-200px;right:-150px;animation:d2 28s ease-in-out infinite}
+.o3{width:500px;height:500px;background:radial-gradient(circle,rgba(236,72,153,.18) 0%,transparent 70%);filter:blur(70px);top:40%;left:55%;animation:d3 36s ease-in-out infinite}
+.aurora{position:absolute;inset:0;background:linear-gradient(135deg,transparent 20%,rgba(139,92,246,.06) 40%,rgba(236,72,153,.04) 55%,transparent 75%);animation:auroraFlow 16s ease-in-out infinite;transform-origin:center}
+@keyframes d1{0%,100%{transform:translate(0,0)}50%{transform:translate(70px,-40px)}}
+@keyframes d2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,50px)}}
+@keyframes d3{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(calc(-50%+80px),calc(-50%-40px))}}
+@keyframes auroraFlow{0%,100%{transform:rotate(-3deg) scaleX(1);opacity:.7}50%{transform:rotate(4deg) scaleX(1.4);opacity:1}}
+.bg-grid{position:fixed;inset:0;z-index:1;background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse at 50% 50%,black 20%,transparent 80%);pointer-events:none}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px;position:relative;z-index:10}
+
+/* ── Nav ────────────────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:100;padding:16px 0;background:rgba(3,7,17,.8);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-inner{display:flex;align-items:center;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--indigo),var(--violet),var(--pink));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;position:relative}
+.nav-icon::after{content:'';position:absolute;inset:-3px;border-radius:11px;background:linear-gradient(135deg,var(--indigo),var(--violet));opacity:.3;filter:blur(8px);z-index:-1}
+.nav-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;background:linear-gradient(135deg,#fff 20%,#C7D2FE 60%,#A78BFA 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-spacer{flex:1}
+.nav-demo{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:var(--glass);color:var(--text2);font:500 13px 'Space Grotesk',sans-serif;text-decoration:none;transition:all .2s}
+.nav-demo:hover{border-color:rgba(139,92,246,.35);color:var(--text);background:rgba(139,92,246,.1)}
+.nav-buy{padding:9px 20px;border-radius:20px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;color:#fff;font:600 13px 'Space Grotesk',sans-serif;text-decoration:none;transition:all .2s;white-space:nowrap}
+.nav-buy:hover{box-shadow:0 6px 24px rgba(91,82,240,.5);transform:translateY(-1px)}
+
+/* ── Hero ────────────────────────────────────────────────────── */
+.hero{padding:96px 0 72px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);font-size:12px;font-weight:500;color:#C4B5FD;margin-bottom:32px;animation:fadeUp .5s ease both}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--violet);box-shadow:0 0 8px var(--violet);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-h1{font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,76px);font-weight:800;line-height:1.04;letter-spacing:-2.5px;margin-bottom:24px;animation:fadeUp .55s .05s ease both}
+.hero-h1 .shimmer{background:linear-gradient(120deg,#fff 0%,#E0E7FF 20%,#A5B4FC 40%,#C084FC 55%,#F9A8D4 70%,#fff 100%);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:textShimmer 5s linear infinite}
+@keyframes textShimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero-sub{font-size:clamp(15px,2.2vw,19px);color:var(--text2);max-width:600px;margin:0 auto 40px;line-height:1.75;animation:fadeUp .55s .1s ease both}
+.hero-sub strong{color:var(--text);font-weight:500}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;animation:fadeUp .55s .15s ease both}
+.btn-primary{padding:15px 32px;border-radius:14px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;color:#fff;font:700 15px 'Space Grotesk',sans-serif;text-decoration:none;cursor:pointer;transition:all .22s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(91,82,240,.4)}
+.btn-primary:hover{box-shadow:0 12px 42px rgba(91,82,240,.6);transform:translateY(-2px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-price{background:rgba(255,255,255,.08);font-weight:500;font-size:12px;padding:4px 10px;border-radius:20px;margin-left:4px}
+.btn-ghost{padding:14px 28px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:var(--glass);color:var(--text2);font:500 15px 'Space Grotesk',sans-serif;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text);background:rgba(255,255,255,.07)}
+.hero-note{font-size:12px;color:var(--text3);margin-top:16px;animation:fadeUp .55s .2s ease both}
+
+/* ── Chat Mockup ─────────────────────────────────────────────── */
+.mockup-wrap{margin:64px auto 0;max-width:820px;animation:fadeUp .7s .25s ease both}
+.mockup-window{background:rgba(8,12,30,.9);border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 0 1px rgba(91,82,240,.1),0 0 80px rgba(91,82,240,.08)}
+.mockup-bar{display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(4,7,18,.6)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#FF5F57}.dot.y{background:#FEBC2E}.dot.g{background:#28C840}
+.mockup-title{font-size:12px;color:var(--text3);margin-left:auto;margin-right:auto;font-family:'Syne',sans-serif;font-weight:600}
+.mockup-body{padding:24px 20px;display:flex;flex-direction:column;gap:14px;min-height:300px}
+.mock-row{display:flex;gap:10px;align-items:flex-start}
+.mock-row.user{flex-direction:row-reverse}
+.mock-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.mock-av.ai{background:linear-gradient(135deg,var(--indigo),var(--violet),var(--pink));font-size:11px}
+.mock-av.user{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+.mock-bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.65;max-width:75%}
+.mock-bubble.ai{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-left:2px solid rgba(139,92,246,.5);border-radius:2px 14px 14px 14px;color:#DDE6F0}
+.mock-bubble.user{background:linear-gradient(135deg,rgba(91,82,240,.8),rgba(139,92,246,.75));border-radius:14px 2px 14px 14px;color:#fff}
+.mock-price-card{background:rgba(79,70,229,.08);border:1px solid rgba(79,70,229,.2);border-radius:10px;padding:10px 14px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mock-price-item{display:flex;flex-direction:column;gap:2px}
+.mock-price-label{font-size:10px;color:var(--text3);font-weight:500}
+.mock-price-val{font-size:14px;font-weight:700;color:#4ADE80}
+.mock-price-chg{font-size:10px;color:#4ADE80;opacity:.8}
+.mock-typing{display:flex;gap:4px;align-items:center;padding:8px 0}
+.mock-dot{width:6px;height:6px;border-radius:50%;animation:tB 1.4s infinite}
+.mock-dot:nth-child(1){background:var(--indigo)}.mock-dot:nth-child(2){background:var(--violet);animation-delay:.15s}.mock-dot:nth-child(3){background:var(--pink);animation-delay:.3s}
+@keyframes tB{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.mock-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.2);font-size:10px;color:#C4B5FD;margin-right:4px}
+.mockup-input-bar{padding:12px 16px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:8px;background:rgba(4,7,18,.5)}
+.mockup-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 14px;font-size:12px;color:var(--text3);font-family:'Space Grotesk',sans-serif}
+.mockup-send{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── Social proof strip ───────────────────────────────────────── */
+.proof-strip{padding:40px 0;border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);margin:80px 0 0}
+.proof-inner{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:40px}
+.proof-stat{text-align:center}
+.proof-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;background:linear-gradient(135deg,#fff,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.proof-lbl{font-size:12px;color:var(--text3);margin-top:2px}
+.proof-div{width:1px;height:40px;background:rgba(255,255,255,.07)}
+
+/* ── Section labels ───────────────────────────────────────────── */
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--violet);margin-bottom:14px}
+.section-h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--text2);line-height:1.7}
+
+/* ── Features grid ────────────────────────────────────────────── */
+.features{padding:96px 0}
+.features-header{text-align:center;margin-bottom:56px}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.feat-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:22px 20px;transition:all .25s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(91,82,240,.06),transparent);opacity:0;transition:opacity .25s;pointer-events:none}
+.feat-card:hover{border-color:rgba(139,92,246,.3);transform:translateY(-4px);box-shadow:0 16px 40px rgba(91,82,240,.15)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+.feat-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:5px;color:var(--text)}
+.feat-desc{font-size:12.5px;color:var(--text3);line-height:1.6}
+.feat-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(139,92,246,.15);color:#C4B5FD;border:1px solid rgba(139,92,246,.25);margin-top:8px}
+
+/* ── Tech stack ───────────────────────────────────────────────── */
+.stack{padding:0 0 96px}
+.stack-header{text-align:center;margin-bottom:40px}
+.stack-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.stack-chip{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:13px;font-weight:500;color:var(--text2);transition:all .2s}
+.stack-chip:hover{border-color:rgba(139,92,246,.3);color:var(--text);background:rgba(139,92,246,.07)}
+.stack-chip-icon{font-size:16px}
+.free-badge{font-size:10px;color:#4ADE80;font-weight:700;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:1px 7px;border-radius:20px;margin-left:4px}
+
+/* ── Pricing ──────────────────────────────────────────────────── */
+.pricing{padding:96px 0;text-align:center}
+.pricing-header{margin-bottom:56px}
+.pricing-cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+.price-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:36px 32px;width:min(100%,360px);text-align:left;position:relative;overflow:hidden;transition:border-color .25s}
+.price-card.featured{border-color:rgba(139,92,246,.45);background:rgba(91,82,240,.07)}
+.price-card.featured::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(91,82,240,.12),rgba(139,92,246,.06),transparent);pointer-events:none}
+.price-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;margin-bottom:20px}
+.price-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.price-desc{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.price-amount{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-2px}
+.price-amount sup{font-size:22px;font-weight:600;letter-spacing:0;vertical-align:super;margin-right:2px}
+.price-period{font-size:13px;color:var(--text3);margin-bottom:28px}
+.price-line{height:1px;background:rgba(255,255,255,.07);margin-bottom:24px}
+.price-features{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+.price-feat{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);line-height:1.5}
+.pf-check{width:18px;height:18px;border-radius:50%;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;color:#4ADE80}
+.price-cta{display:block;padding:15px;border-radius:13px;text-align:center;font:700 15px 'Space Grotesk',sans-serif;text-decoration:none;transition:all .22s}
+.price-cta.main{background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;box-shadow:0 8px 28px rgba(91,82,240,.4)}
+.price-cta.main:hover{box-shadow:0 12px 40px rgba(91,82,240,.6);transform:translateY(-2px)}
+.price-cta.ghost{background:var(--glass);border:1px solid rgba(255,255,255,.1);color:var(--text2)}
+.price-cta.ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.price-guarantee{text-align:center;margin-top:24px;font-size:12px;color:var(--text3)}
+.price-guarantee span{color:#4ADE80}
+
+/* ── FAQ ──────────────────────────────────────────────────────── */
+.faq{padding:0 0 96px}
+.faq-header{text-align:center;margin-bottom:48px}
+.faq-list{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.faq-item{background:var(--glass);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+.faq-q{padding:18px 22px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;color:var(--text);transition:background .15s;user-select:none}
+.faq-q:hover{background:rgba(255,255,255,.04)}
+.faq-arrow{color:var(--text3);transition:transform .25s;font-size:16px;flex-shrink:0}
+.faq-item.open .faq-arrow{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;font-size:13.5px;color:var(--text2);line-height:1.75}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 22px 18px}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+footer{border-top:1px solid rgba(255,255,255,.05);padding:40px 0;text-align:center}
+.footer-logo{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:12px}
+.footer-text{font-size:12px;color:var(--text3);line-height:1.8}
+.footer-text a{color:var(--text3);text-decoration:none;transition:color .15s}
+.footer-text a:hover{color:var(--text2)}
+
+/* ── Animations ──────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+
+@media(max-width:680px){
+  .hero{padding:64px 0 48px}
+  .hero-h1{letter-spacing:-1.5px}
+  .hero-ctas{flex-direction:column;align-items:stretch}
+  .btn-primary,.btn-ghost{justify-content:center}
+  .proof-inner{gap:24px}
+  .proof-div{display:none}
+  .feat-grid{grid-template-columns:1fr}
+  .pricing-cards{flex-direction:column;align-items:center}
+  nav .nav-demo{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="aurora"></div></div>
+<div class="bg-grid"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="wrap nav-inner">
+    <a class="nav-logo" href="#">
+      <div class="nav-icon">✦</div>
+      <span class="nav-name">Nova AI</span>
+    </a>
+    <div class="nav-spacer"></div>
+    <a class="nav-demo" href="/app" target="_blank">Try Demo →</a>
+    <a class="nav-buy" href="#pricing">Buy Template — $79</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-badge">🎉 Complete Source Code — Deploy in 30 Minutes</div>
+    <h1 class="hero-h1">The AI chatbot<br><span class="shimmer">you've never seen before.</span></h1>
+    <p class="hero-sub">Real-time web search · Live prices · Voice · Image generation · <strong>9 languages</strong> · Spring cursor · Command palette · Aurora UI — all free to run. Your brand. Your domain. Your product.</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#pricing">
+        Get the Source Code
+        <span class="btn-price">$79</span>
+      </a>
+      <a class="btn-ghost" href="/app" target="_blank">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Try Live Demo
+      </a>
+    </div>
+    <p class="hero-note">One-time payment · Complete source code · No monthly fees · 100% free APIs</p>
+
+    <!-- Chat Mockup -->
+    <div class="mockup-wrap">
+      <div class="mockup-window">
+        <div class="mockup-bar">
+          <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+          <div class="mockup-title">Nova AI — Enterprise Intelligence Platform</div>
+        </div>
+        <div class="mockup-body">
+          <div class="mock-row user">
+            <div class="mock-av user">👤</div>
+            <div class="mock-bubble user">What's the price of Bitcoin and Ethereum right now?</div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-av ai">✦</div>
+            <div>
+              <div class="mock-bubble ai">
+                <div><span class="mock-tag">📈 Live Data</span></div>
+                <div style="margin-top:8px">Here are the current prices:</div>
+                <div class="mock-price-card">
+                  <div class="mock-price-item"><div class="mock-price-label">Bitcoin (BTC)</div><div class="mock-price-val">$67,842</div><div class="mock-price-chg">▲ +2.4% today</div></div>
+                  <div class="mock-price-item"><div class="mock-price-label">Ethereum (ETH)</div><div class="mock-price-val">$3,521</div><div class="mock-price-chg">▲ +1.8% today</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-row user">
+            <div class="mock-av user">👤</div>
+            <div class="mock-bubble user">Generate an image of a futuristic city at sunset</div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-av ai">✦</div>
+            <div class="mock-bubble ai">
+              <span class="mock-tag">🖼️ Generating…</span>
+              <div style="margin-top:8px;background:linear-gradient(135deg,rgba(91,82,240,.15),rgba(236,72,153,.1));border-radius:10px;height:80px;display:flex;align-items:center;justify-content:center;color:rgba(139,92,246,.7);font-size:12px;border:1px solid rgba(139,92,246,.2)">✦ AI image rendered here</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-input-bar">
+          <div class="mockup-input">Ask Nova anything — web, prices, news, voice…</div>
+          <div class="mockup-send">
+            <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Proof strip -->
+<div class="proof-strip reveal">
+  <div class="wrap">
+    <div class="proof-inner">
+      <div class="proof-stat"><div class="proof-num">11</div><div class="proof-lbl">Live tools built in</div></div>
+      <div class="proof-div"></div>
+      <div class="proof-stat"><div class="proof-num">9</div><div class="proof-lbl">Languages supported</div></div>
+      <div class="proof-div"></div>
+      <div class="proof-stat"><div class="proof-num">$0</div><div class="proof-lbl">Monthly API cost</div></div>
+      <div class="proof-div"></div>
+      <div class="proof-stat"><div class="proof-num">30m</div><div class="proof-lbl">To deploy from scratch</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<section class="features reveal">
+  <div class="wrap">
+    <div class="features-header">
+      <div class="section-label">What's included</div>
+      <h2 class="section-h2">Everything. Nothing missing.</h2>
+      <p class="section-sub">Every feature is already built and working. You don't need to add anything.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-name">Real-Time Web Search</div>
+        <div class="feat-desc">DuckDuckGo-powered live web search. Nova finds current information, summarizes results, and cites sources.</div>
+        <div class="feat-badge">Live</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📈</div>
+        <div class="feat-name">Live Crypto & Stock Prices</div>
+        <div class="feat-desc">Real-time prices for Bitcoin, Ethereum, stocks, and live forex exchange rates. Pulls fresh data every query.</div>
+        <div class="feat-badge">Real-time</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🖼️</div>
+        <div class="feat-name">AI Image Generation</div>
+        <div class="feat-desc">Free image generation via Pollinations AI. Users describe an image and Nova creates it instantly, rendered in chat.</div>
+        <div class="feat-badge">Free</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎤</div>
+        <div class="feat-name">Voice Input + TTS</div>
+        <div class="feat-desc">Speak to Nova — live waveform while recording, Groq Whisper transcription. Plus TTS to hear AI responses spoken aloud.</div>
+        <div class="feat-badge">WebAudio</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🌍</div>
+        <div class="feat-name">9 Languages + RTL</div>
+        <div class="feat-desc">English, Hindi, Spanish, French, German, Arabic (RTL), Chinese, Japanese, Portuguese. Full UI translation, saved to localStorage.</div>
+        <div class="feat-badge">Global</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⌘</div>
+        <div class="feat-name">Command Palette (⌘K)</div>
+        <div class="feat-desc">Glass overlay command palette with fuzzy search. Instant access to all actions, recent conversations, and live tools. Never seen in any chat app.</div>
+        <div class="feat-badge">Unique</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🌌</div>
+        <div class="feat-name">Aurora UI + Spring Cursor</div>
+        <div class="feat-desc">Animated aurora background, spring-physics cursor orb, particle burst on send, 3D parallax welcome, holographic AI bubble shimmer.</div>
+        <div class="feat-badge">Premium</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-name">Share Conversations</div>
+        <div class="feat-desc">Generate a public read-only link for any conversation. Shareable URLs stored in SQLite with cryptographic tokens.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📲</div>
+        <div class="feat-name">PWA — Install as App</div>
+        <div class="feat-desc">Full Progressive Web App. Users can install it to their home screen on iOS and Android. Works offline. No App Store needed.</div>
+        <div class="feat-badge">PWA</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🧮</div>
+        <div class="feat-name">Math Rendering (KaTeX)</div>
+        <div class="feat-desc">Inline and display math with $LaTeX$ and $$equations$$. Beautiful typeset math rendered live inside chat bubbles.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">👤</div>
+        <div class="feat-name">Auth + Admin Panel</div>
+        <div class="feat-desc">Full user registration, login, and session management. Password-protected admin dashboard to manage users, settings, and API keys.</div>
+        <div class="feat-badge">Full Stack</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📰</div>
+        <div class="feat-name">News + Weather + More</div>
+        <div class="feat-desc">Breaking news headlines, live weather (Open-Meteo), Wikipedia, YouTube summaries, unit converter, world clock, and more — 11 tools total.</div>
+        <div class="feat-badge">11 Tools</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stack -->
+<section class="stack reveal">
+  <div class="wrap">
+    <div class="stack-header">
+      <div class="section-label">Tech Stack</div>
+      <h2 class="section-h2">100% free to run.</h2>
+      <p class="section-sub">Every API used is free. Zero ongoing cost. You pay once and keep it forever.</p>
+    </div>
+    <div class="stack-chips">
+      <div class="stack-chip"><span class="stack-chip-icon">🦙</span>Llama 3.3 70B <span class="free-badge">FREE</span></div>
+      <div class="stack-chip"><span class="stack-chip-icon">⚡</span>Groq API <span class="free-badge">FREE</span></div>
+      <div class="stack-chip"><span class="stack-chip-icon">🖼️</span>Pollinations AI <span class="free-badge">FREE</span></div>
+      <div class="stack-chip"><span class="stack-chip-icon">🌤</span>Open-Meteo <span class="free-badge">FREE</span></div>
+      <div class="stack-chip"><span class="stack-chip-icon">🔍</span>DuckDuckGo <span class="free-badge">FREE</span></div>
+      <div class="stack-chip"><span class="stack-chip-icon">🐍</span>FastAPI + Python</div>
+      <div class="stack-chip"><span class="stack-chip-icon">🗄️</span>SQLite Database</div>
+      <div class="stack-chip"><span class="stack-chip-icon">🚀</span>Railway Hosting <span class="free-badge">FREE TIER</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing reveal" id="pricing">
+  <div class="wrap">
+    <div class="pricing-header">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-h2">Own it. Deploy it. Sell it.</h2>
+      <p class="section-sub">One price. Everything included. No subscriptions, no hidden fees.</p>
+    </div>
+    <div class="pricing-cards">
+      <div class="price-card">
+        <div class="price-name">Template</div>
+        <div class="price-desc">Everything you need to deploy your own Nova AI. Source code, docs, and deploy guide included.</div>
+        <div class="price-amount"><sup>$</sup>79</div>
+        <div class="price-period">one-time payment · yours forever</div>
+        <div class="price-line"></div>
+        <div class="price-features">
+          <div class="price-feat"><div class="pf-check">✓</div><div>Complete FastAPI backend source code</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Full frontend HTML/CSS/JS (no framework needed)</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>11 live tools (web, prices, news, images, voice…)</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Admin panel + user authentication system</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>9-language UI with RTL Arabic support</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Aurora UI · Command palette · Spring cursor · Particles</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>PWA — installable as a mobile app</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Step-by-step Railway deploy guide</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Use it, reskin it, sell access — no restrictions</div></div>
+        </div>
+        <!-- Replace #buy with your actual Gumroad link -->
+        <a class="price-cta main" href="#buy">Buy on Gumroad →</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="price-badge">✦ Most Popular</div>
+        <div class="price-name">Template + Setup</div>
+        <div class="price-desc">We deploy it on your domain and customize the branding for you. Ready to go from day one.</div>
+        <div class="price-amount"><sup>$</sup>149</div>
+        <div class="price-period">one-time payment · includes everything in Template</div>
+        <div class="price-line"></div>
+        <div class="price-features">
+          <div class="price-feat"><div class="pf-check">✓</div><div>Everything in Template</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>We deploy it to Railway on your account</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Your name and logo applied to the UI</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Custom greeting and persona setup</div></div>
+          <div class="price-feat"><div class="pf-check">✓</div><div>Live within 24 hours · Email support included</div></div>
+        </div>
+        <!-- Replace #buy-pro with your actual Gumroad link -->
+        <a class="price-cta main" href="#buy-pro">Get Setup Help →</a>
+      </div>
+    </div>
+    <p class="price-guarantee">🔒 Secure checkout via Gumroad · <span>Instant download</span> · Questions? Email us</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq reveal">
+  <div class="wrap">
+    <div class="faq-header">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-h2">Common questions.</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Do I need to pay for any APIs to run this?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">No. Every API used is completely free. Groq (AI), Pollinations (images), DuckDuckGo (search), Open-Meteo (weather) — all free with no credit card required. Railway's free tier is enough to host the whole app.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I use my own domain name?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. Railway supports custom domains. After purchasing, you can point any domain you own to your Railway deployment. The deploy guide includes step-by-step instructions.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I resell or charge users for access?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes. After purchase, this code is yours. You can rebrand it, charge users for access, sell it as a SaaS, or use it as a client project. The only thing you can't do is resell the source code itself as a template.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What do I need to know to deploy this?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Basic comfort with the terminal and a Railway account (free). The deploy guide walks you through everything — no prior Python or FastAPI experience needed. If you want it set up for you, get the Template + Setup tier.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What AI model does it use?<span class="faq-arrow">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">Llama 3.3 70B via Groq — one of the best open-source language models available. It's free on Groq's free tier. You can also configure it to use any other LLM by changing a few lines in the backend.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="footer-logo">
+      <div class="nav-icon" style="width:28px;height:28px;font-size:13px">✦</div>
+      <span class="nav-name" style="font-size:14px">Nova AI</span>
+    </div>
+    <div class="footer-text">
+      Built with ❤️ using Python, FastAPI, and zero paid APIs.<br>
+      <a href="/app" target="_blank">Try the live demo</a> · <a href="#pricing">Buy the template</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

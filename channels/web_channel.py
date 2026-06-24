@@ -140,6 +140,14 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
 
     @app.get("/")
     async def root():
+        f = STATIC_DIR / "landing.html"
+        if f.exists():
+            return FileResponse(f)
+        f2 = STATIC_DIR / "index.html"
+        return FileResponse(f2) if f2.exists() else {"status": "online"}
+
+    @app.get("/app")
+    async def app_page():
         f = STATIC_DIR / "index.html"
         return FileResponse(f) if f.exists() else {"status": "online"}
 
