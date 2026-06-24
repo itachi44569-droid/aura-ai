@@ -13,6 +13,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -164,6 +167,18 @@ textarea#input::placeholder { color:var(--text4); }
 .waveform{display:none;align-items:flex-end;gap:2px;height:20px;padding:0 2px}
 .waveform.show{display:flex}
 .wf-bar{width:3px;background:#ef4444;border-radius:2px;min-height:3px;transition:height .06s ease}
+/* Bubble action buttons */
+.bubble-actions{display:flex;gap:5px;padding:3px 0 2px 43px;opacity:0;transition:opacity .15s}
+.msg-group:hover .bubble-actions{opacity:1}
+.bub-btn{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text3);cursor:pointer;transition:all .14s;display:flex;align-items:center;gap:4px}
+.bub-btn:hover{background:rgba(79,70,229,.12);border-color:rgba(79,70,229,.25);color:#818CF8}
+/* Scroll-to-bottom */
+#scroll-btn{position:fixed;bottom:100px;right:20px;z-index:40;width:34px;height:34px;border-radius:50%;background:rgba(79,70,229,.35);border:1px solid rgba(79,70,229,.45);color:#818CF8;font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .2s}
+#scroll-btn:hover{background:rgba(79,70,229,.55);transform:translateY(-2px)}
+/* History search */
+.hist-search{width:100%;padding:6px 10px;border-radius:7px;border:1px solid var(--glass-b);background:rgba(255,255,255,.04);color:var(--text);font:12px 'Inter',sans-serif;outline:none;transition:border .15s}
+.hist-search:focus{border-color:rgba(79,70,229,.4)}
+.hist-search::placeholder{color:var(--text4)}
 /* AI-generated images in bubbles */
 .bubble.ai img{max-width:100%;border-radius:12px;margin:8px 0;display:block;border:1px solid rgba(255,255,255,.08)}
 /* Share modal */
@@ -287,6 +302,7 @@ textarea#input::placeholder { color:var(--text4); }
       <div class="sb-item" onclick="qt('Summarize this YouTube video: https://youtu.be/aircAruvnKk')"><span class="sb-icon">🎬</span>YouTube Summary</div>
 
       <div class="sb-lbl" style="margin-top:12px">Past Conversations</div>
+      <input class="hist-search" id="hist-search" placeholder="🔍 Search…" oninput="filterHist(this.value)" style="margin-bottom:6px">
       <div id="hist"></div>
     </div>
     <div class="sb-foot">
@@ -376,6 +392,7 @@ textarea#input::placeholder { color:var(--text4); }
       </div>
     </div>
 
+    <button id="scroll-btn" onclick="chatEl.scrollTop=chatEl.scrollHeight" title="Scroll to bottom">↓</button>
     <div class="input-area">
       <div class="input-wrap">
         <div class="input-box">
@@ -398,6 +415,7 @@ textarea#input::placeholder { color:var(--text4); }
         </div>
         <div class="input-meta">
           <span class="input-hint">Enter to send · Shift+Enter for newline</span>
+          <span id="char-count" style="font-size:10px;color:var(--text4);margin-left:auto">0</span>
           <div class="key-row">
             <span class="key-lbl">API Key:</span>
             <input type="text" id="apik" placeholder="nb-xxxx (optional)">
@@ -551,7 +569,10 @@ const ptag = document.getElementById('ptag');
 const stxt = document.getElementById('stxt');
 
 apik.addEventListener('input', () => { ptag.style.display = apik.value.trim().startsWith('nb-') ? 'inline' : 'none'; });
-inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 180) + 'px'; });
+inp.addEventListener('input', () => {
+  inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 180) + 'px';
+  document.getElementById('char-count').textContent = inp.value.length;
+});
 inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
 
 /* Export */
@@ -644,22 +665,32 @@ function loadSess(i) {
   closeSidebar();
 }
 
+let _serverConvs = [];
+function _renderConvList(convs) {
+  const el = document.getElementById('hist');
+  if (!convs.length) { el.innerHTML = '<div class="sb-item" style="color:var(--text4);font-style:italic">No matches</div>'; return; }
+  el.innerHTML = convs.map(c =>
+    `<div class="sb-item" style="justify-content:space-between" onmouseenter="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='flex')" onmouseleave="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='none')">
+      <span onclick="loadServerConv('${_esc(c.id)}')" style="flex:1;display:flex;align-items:center;gap:8px;overflow:hidden"><span class="sb-icon">☁️</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc(c.title)}</span></span>
+      <span class="sb-action" style="display:none;flex-shrink:0;gap:4px;align-items:center">
+        <span title="Share" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:10px;cursor:pointer" onclick="shareConv('${_esc(c.id)}')">🔗</span>
+        <span title="Delete" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:11px;cursor:pointer" onclick="deleteServerConv('${_esc(c.id)}')">✕</span>
+      </span>
+    </div>`
+  ).join('');
+}
+function filterHist(q) {
+  q = (q || '').toLowerCase().trim();
+  const list = q ? _serverConvs.filter(c => c.title.toLowerCase().includes(q)) : _serverConvs;
+  if (_serverConvs.length) _renderConvList(list); else renderHist();
+}
 async function loadServerHistory() {
   if (!_authToken) { renderHist(); return; }
   try {
     const d = await fetch('/history', { headers: { 'Authorization': 'Bearer ' + _authToken } }).then(r => r.json());
-    const convs = d.conversations || [];
-    const el = document.getElementById('hist');
-    if (!convs.length) { renderHist(); return; }
-    el.innerHTML = convs.map(c =>
-      `<div class="sb-item" style="justify-content:space-between" onmouseenter="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='flex')" onmouseleave="this.querySelectorAll('.sb-action').forEach(b=>b.style.display='none')">
-        <span onclick="loadServerConv('${_esc(c.id)}')" style="flex:1;display:flex;align-items:center;gap:8px;overflow:hidden"><span class="sb-icon">☁️</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc(c.title)}</span></span>
-        <span class="sb-action" style="display:none;flex-shrink:0;gap:4px;align-items:center">
-          <span title="Share" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(99,102,241,.2);color:#a5b4fc;font-size:10px;cursor:pointer" onclick="shareConv('${_esc(c.id)}')">🔗</span>
-          <span title="Delete" style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:rgba(239,68,68,.15);color:#FCA5A5;font-size:11px;cursor:pointer" onclick="deleteServerConv('${_esc(c.id)}')">✕</span>
-        </span>
-      </div>`
-    ).join('');
+    _serverConvs = d.conversations || [];
+    if (!_serverConvs.length) { renderHist(); return; }
+    _renderConvList(_serverConvs);
   } catch { renderHist(); }
 }
 
@@ -697,10 +728,12 @@ function connect() {
       if (curBubble) {
         const c = curBubble.querySelector('.cursor');
         if (c) c.remove();
-        // Grab raw text, then render as markdown
         const raw = curBubble.textContent;
         const msgGroup = curBubble.closest('.msg-group');
         curBubble.innerHTML = renderMd(raw);
+        curBubble.dataset.raw = raw;
+        renderMath(curBubble);
+        msgGroup.append(_makeBubbleActions());
         const lastUser = [...chatEl.querySelectorAll('.msg-row.user .bubble')].pop();
         if (lastUser && raw) { curMsgs.push({ u: lastUser.textContent, a: raw, ts: new Date().toISOString() }); saveSess(); }
         if (raw) showFollowups(raw, msgGroup);
@@ -759,9 +792,11 @@ function addBubble(role, text, anim = true) {
   const r = document.createElement('div'); r.className = 'msg-row ' + role;
   const av = document.createElement('div'); av.className = 'av ' + role; av.textContent = role === 'ai' ? '✦' : '👤';
   const b = document.createElement('div'); b.className = 'bubble ' + (role === 'error' ? 'error' : role);
-  if (role === 'ai') b.innerHTML = renderMd(text);
+  if (role === 'ai') { b.innerHTML = renderMd(text); b.dataset.raw = text; renderMath(b); }
   else b.textContent = text;
-  r.append(av, b); g.append(r); chatEl.append(g);
+  r.append(av, b);
+  if (role === 'ai') { g.append(r, _makeBubbleActions()); } else { g.append(r); }
+  chatEl.append(g);
   chatEl.scrollTop = chatEl.scrollHeight;
   return b;
 }
@@ -1091,6 +1126,48 @@ document.getElementById('install-dismiss').addEventListener('click', () => {
 if (window.matchMedia('(display-mode: standalone)').matches) {
   document.getElementById('install-banner').style.display = 'none';
 }
+
+// ── Math rendering ─────────────────────────────────────────
+function renderMath(el) {
+  if (window.renderMathInElement) {
+    try {
+      renderMathInElement(el, {
+        delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],
+        throwOnError:false
+      });
+    } catch {}
+  }
+}
+
+// ── Bubble actions (copy + retry) ──────────────────────────
+function _makeBubbleActions() {
+  const d = document.createElement('div'); d.className = 'bubble-actions';
+  d.innerHTML = `<button class="bub-btn" onclick="copyBubble(this)">⧉ Copy</button><button class="bub-btn" onclick="regenBubble(this)">↻ Retry</button>`;
+  return d;
+}
+function copyBubble(btn) {
+  const bubble = btn.closest('.msg-group').querySelector('.bubble.ai');
+  const text = bubble.dataset.raw || bubble.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = '⧉ Copy', 2000);
+  });
+}
+function regenBubble(btn) {
+  if (!curMsgs.length || streaming) return;
+  const last = curMsgs.pop();
+  btn.closest('.msg-group')?.remove();
+  [...chatEl.querySelectorAll('.msg-row.user')].pop()?.closest('.msg-group')?.remove();
+  chatEl.querySelectorAll('.followup-row').forEach(el => el.remove());
+  inp.value = last.u;
+  send();
+}
+
+// ── Scroll-to-bottom button ─────────────────────────────────
+chatEl.addEventListener('scroll', () => {
+  const atBottom = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 100;
+  document.getElementById('scroll-btn').style.display = atBottom ? 'none' : 'flex';
+});
 
 // ── Share conversation ──────────────────────────────────────
 async function shareConv(convId) {
