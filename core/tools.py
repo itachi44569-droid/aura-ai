@@ -482,29 +482,61 @@ async def read_webpage(url: str) -> dict:
 @tool(
     name="generate_image",
     description=(
-        "Generate an image from a text description. Use whenever the user asks to create, draw, "
-        "generate, make, paint, or visualise an image, picture, photo, artwork, or illustration. "
-        "Return the markdown image tag in your response so the image renders inline."
+        "Generate a high-quality image from a text description using Flux AI. "
+        "Use whenever the user asks to create, draw, generate, make, paint, or visualise "
+        "an image, picture, photo, artwork, or illustration. "
+        "Write a rich, detailed visual prompt for best results — include style, lighting, mood, "
+        "colors, and composition details. Return the markdown image tag so the image renders inline."
     ),
     parameters={
-        "prompt":  {"type":"string",  "description":"Detailed visual description of the image"},
-        "width":   {"type":"integer", "description":"Width in pixels (256-1024, default 768)"},
-        "height":  {"type":"integer", "description":"Height in pixels (256-1024, default 768)"},
+        "prompt": {
+            "type": "string",
+            "description": (
+                "Detailed visual prompt. Be specific: describe subjects, setting, lighting, "
+                "color palette, art style (photorealistic, oil painting, digital art, anime, etc.), "
+                "mood, and composition. More detail = better image quality."
+            ),
+        },
+        "width":  {"type": "integer", "description": "Width in pixels. Use 1024 for landscape, 768 for square, 576 for portrait."},
+        "height": {"type": "integer", "description": "Height in pixels. Use 576 for landscape, 768 for square, 1024 for portrait."},
+        "style":  {
+            "type": "string",
+            "description": "Visual style: 'photorealistic', 'digital-art', 'anime', 'oil-painting', 'watercolor', 'cinematic', '3d-render'",
+        },
     },
     required=["prompt"],
 )
-async def generate_image(prompt: str, width: int = 768, height: int = 768) -> dict:
-    import urllib.parse, time
-    w = max(256, min(1024, width))
-    h = max(256, min(1024, height))
-    seed = int(time.time()) % 100000
-    encoded = urllib.parse.quote(prompt)
-    url = f"https://image.pollinations.ai/prompt/{encoded}?width={w}&height={h}&nologo=true&seed={seed}"
+async def generate_image(prompt: str, width: int = 1024, height: int = 768,
+                         style: str = "photorealistic") -> dict:
+    import urllib.parse, time, random
+
+    style_suffixes = {
+        "photorealistic":  "photorealistic, 8K UHD, sharp focus, professional photography, detailed",
+        "digital-art":     "digital art, concept art, trending on ArtStation, vibrant colors, detailed",
+        "anime":           "anime style, Studio Ghibli inspired, cel shading, beautiful, detailed",
+        "oil-painting":    "oil painting, impressionist, rich textures, masterpiece, gallery quality",
+        "watercolor":      "watercolor painting, soft edges, artistic, beautiful, flowing colors",
+        "cinematic":       "cinematic, movie still, dramatic lighting, anamorphic lens, film grain",
+        "3d-render":       "3D render, octane render, ray tracing, photorealistic, detailed materials",
+    }
+    suffix = style_suffixes.get(style, style_suffixes["photorealistic"])
+    full_prompt = f"{prompt}, {suffix}"
+
+    w = max(256, min(1792, width))
+    h = max(256, min(1792, height))
+    seed = random.randint(1, 999999)
+    encoded = urllib.parse.quote(full_prompt)
+
+    url = (
+        f"https://image.pollinations.ai/prompt/{encoded}"
+        f"?model=flux&width={w}&height={h}&nologo=true&enhance=true&seed={seed}"
+    )
+
     return {
         "image_url": url,
-        "prompt":    prompt,
+        "prompt":    full_prompt,
         "display":   f"![{prompt}]({url})",
-        "note":      "Include the display markdown verbatim in your response so the image renders.",
+        "note":      "Include the display markdown verbatim in your response so the image renders inline.",
     }
 
 # ── Reminder (scheduler module handles the actual scheduling) ─────────────────

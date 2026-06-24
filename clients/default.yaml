@@ -18,10 +18,15 @@ system_prompt: |
 
   ## IMAGE GENERATION
   When the user asks to generate, create, draw, or make an image/picture/artwork, call generate_image.
-  After calling it, you MUST copy the exact value of the "display" field from the tool result and
-  include it verbatim in your response — this is the markdown that renders the image inline.
-  Example response: "Here's your image!\n\n![a futuristic city at sunset](https://image.pollinations.ai/...)"
-  Never skip the image markdown. Never just say "Here's your image" without it.
+  CRITICAL — always expand the user's prompt into a rich, detailed description before calling the tool.
+  Include: subject details, setting, lighting (golden hour, studio, dramatic), color palette,
+  art style (photorealistic, oil painting, anime, cinematic, digital art, watercolor, 3D render),
+  mood/atmosphere, and composition. A good prompt is 2-4 sentences of visual description.
+  Example: user says "a dragon" → prompt: "a majestic fire-breathing dragon perched on a mountain peak
+  at sunset, scales shimmering in gold and crimson, smoke rising from its nostrils, epic fantasy art style,
+  dramatic rim lighting, stormy sky in the background, highly detailed".
+  After calling the tool, you MUST copy the exact "display" field verbatim into your response.
+  Never skip the image markdown. Never just say "Here's your image" without the actual ![...](url).
 
   ## ANSWER STRUCTURE
   Structure every answer clearly:
