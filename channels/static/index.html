@@ -307,12 +307,87 @@ textarea#input::placeholder { color:var(--text4); }
   .msg-group{padding:4px 0;}
   .followup-chip{font-size:11.5px;padding:4px 12px;}
 }
+
+/* ── Parallax welcome layers ──────────────────────────────── */
+.welcome-glow,.welcome-heading,.welcome-sub,.welcome-chips,.suggestions{translate:var(--para-x,0px) var(--para-y,0px);transition:translate .45s cubic-bezier(.16,1,.3,1)}
+
+/* ── Cursor orb ───────────────────────────────────────────── */
+#cursor-orb{position:fixed;pointer-events:none;z-index:99999;width:16px;height:16px;border-radius:50%;background:rgba(139,92,246,.3);border:1px solid rgba(139,92,246,.5);mix-blend-mode:screen;transform:translate(-50%,-50%);transition:width .3s,height .3s,background .3s,border-color .3s,opacity .3s;will-change:transform;opacity:0}
+body.cursor-active #cursor-orb{opacity:1}
+body.cursor-hover #cursor-orb{width:38px;height:38px;background:rgba(139,92,246,.15);border-color:rgba(196,181,253,.55)}
+@media(max-width:700px){#cursor-orb{display:none!important}}
+
+/* ── Particles ────────────────────────────────────────────── */
+.particle{position:fixed;pointer-events:none;z-index:99998;border-radius:50%;animation:particleFly var(--dur,.65s) cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes particleFly{to{transform:translate(var(--tx,0px),var(--ty,0px)) scale(0);opacity:0}}
+
+/* ── Toast notifications ──────────────────────────────────── */
+.toast-container{position:fixed;bottom:28px;right:24px;z-index:99997;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:flex-end}
+.toast{padding:12px 16px;border-radius:14px;font-size:13px;font-weight:500;color:#fff;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);pointer-events:auto;animation:toastIn .35s cubic-bezier(.16,1,.3,1) both;display:flex;align-items:center;gap:9px;min-width:200px;max-width:310px;box-shadow:0 8px 32px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08)}
+.toast.out{animation:toastOut .22s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px) scale(.95) translateX(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(6px) scale(.96)}}
+.toast.info{background:rgba(79,70,229,.82);border-color:rgba(139,92,246,.35)}
+.toast.success{background:rgba(22,163,74,.82);border-color:rgba(34,197,94,.35)}
+.toast.error{background:rgba(185,28,28,.82);border-color:rgba(239,68,68,.35)}
+.toast.warn{background:rgba(161,98,7,.82);border-color:rgba(234,179,8,.35)}
+.toast-icon{font-size:16px;flex-shrink:0}
+.toast-close{margin-left:auto;padding:0;background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:14px;line-height:1;flex-shrink:0;transition:color .15s}
+.toast-close:hover{color:#fff}
+
+/* ── Command Palette ──────────────────────────────────────── */
+.cmdpal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:9000;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:flex-start;justify-content:center;padding-top:13vh;animation:fadeInFast .12s ease}
+@keyframes fadeInFast{from{opacity:0}to{opacity:1}}
+.cmdpal-box{width:min(93vw,630px);background:rgba(6,9,25,.96);border:1px solid rgba(139,92,246,.28);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.75),0 0 0 1px rgba(91,82,240,.12),0 0 100px rgba(91,82,240,.06);animation:cmdIn .2s cubic-bezier(.16,1,.3,1)}
+@keyframes cmdIn{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
+.cmdpal-search-wrap{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.055)}
+.cmdpal-search-icon{flex-shrink:0;color:rgba(139,92,246,.6)}
+.cmdpal-input{flex:1;background:transparent;border:none;outline:none;color:#F1F5F9;font:15px/1 'Space Grotesk',sans-serif;caret-color:#8B5CF6}
+.cmdpal-input::placeholder{color:rgba(71,85,105,.7)}
+.cmdpal-esc{font-size:10px;font-weight:600;letter-spacing:.4px;color:var(--text4);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:5px;padding:3px 7px;flex-shrink:0;font-family:monospace}
+.cmdpal-results{max-height:390px;overflow-y:auto;padding:8px}
+.cmdpal-results::-webkit-scrollbar{width:2px}
+.cmdpal-results::-webkit-scrollbar-thumb{background:var(--indigo);border-radius:2px}
+.cmdpal-group-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text4);padding:8px 10px 4px;display:flex;align-items:center;gap:8px}
+.cmdpal-group-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05)}
+.cmdpal-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:all .1s;color:var(--text2)}
+.cmdpal-item:hover,.cmdpal-item.sel{background:rgba(91,82,240,.16);color:#fff}
+.cmdpal-item.sel{background:rgba(91,82,240,.22)}
+.cmdpal-item-icon{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.cmdpal-item.sel .cmdpal-item-icon{background:rgba(91,82,240,.3)}
+.cmdpal-item-text{flex:1;min-width:0}
+.cmdpal-item-label{font-size:13px;font-weight:500;color:inherit}
+.cmdpal-item-hint{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmdpal-empty{padding:28px;text-align:center;color:var(--text4);font-size:13px}
+
+/* ── Holographic AI bubble shimmer ────────────────────────── */
+.bubble.ai{position:relative}
+.bubble.ai::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 0%,rgba(255,128,0,.13) 18%,rgba(64,224,208,.13) 36%,rgba(91,82,240,.13) 54%,rgba(236,72,153,.13) 72%,transparent 90%);background-size:300% 300%;opacity:0;transition:opacity .4s;pointer-events:none}
+.bubble.ai:hover::after{opacity:1;animation:holoShift 3s linear infinite}
+@keyframes holoShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* ── TTS speaking state ───────────────────────────────────── */
+.bub-btn.speaking{background:rgba(79,70,229,.18);border-color:rgba(79,70,229,.35);color:#818CF8}
+@keyframes speakPulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 10px rgba(79,70,229,.4)}}
 </style>
 </head>
 <body>
 <div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div><div class="aurora"></div><div class="aurora2"></div></div>
 <div class="bg-grid"></div>
 <div class="bg-noise"></div>
+
+<div id="cursor-orb"></div>
+<div id="toast-container" class="toast-container"></div>
+<div id="cmdpal" class="cmdpal-overlay" style="display:none" onclick="if(event.target===this)closeCmdPal()">
+  <div class="cmdpal-box">
+    <div class="cmdpal-search-wrap">
+      <svg class="cmdpal-search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="cmdpal-input" class="cmdpal-input" placeholder="Search actions, conversations, tools…" oninput="cmdSearch(this.value)" onkeydown="cmdKey(event)" autocomplete="off" spellcheck="false">
+      <span class="cmdpal-esc">ESC</span>
+    </div>
+    <div id="cmdpal-results" class="cmdpal-results"></div>
+  </div>
+</div>
 
 <div class="app">
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -368,6 +443,10 @@ textarea#input::placeholder { color:var(--text4); }
         <div class="tb-badge mem">⚡ Memory</div>
         <div class="tb-badge kb">📚 Knowledge Base</div>
         <div class="tb-badge tools">🔧 11 Tools</div>
+        <button class="tb-export" onclick="openCmdPal()" title="Command palette · Ctrl+K" style="gap:5px">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+          <span class="tb-link-label">⌘K</span>
+        </button>
         <div style="position:relative;flex-shrink:0">
           <button class="tb-export" id="lang-btn" onclick="toggleLangMenu()" title="Switch language">
             🌐 <span id="lang-label" class="tb-link-label">EN</span>
@@ -466,7 +545,7 @@ textarea#input::placeholder { color:var(--text4); }
           </button>
         </div>
         <div class="input-meta">
-          <span class="input-hint">Enter to send · Shift+Enter for newline</span>
+          <span class="input-hint">Enter to send · Shift+Enter for newline · <span style="opacity:.6">⌘K</span> commands</span>
           <span id="char-count" style="font-size:10px;color:var(--text4);margin-left:auto">0</span>
           <div class="key-row">
             <span class="key-lbl">API Key:</span>
@@ -846,6 +925,7 @@ function newChat() {
       <div class="sug" onclick="qt('Convert 1000 USD to Indian Rupees with live rate')"><div class="sug-icon">💱</div><div class="sug-title">${s.s4}</div><div class="sug-hint">${s.s4h}</div></div>
     </div>`;
   chatEl.appendChild(w);
+  setTimeout(_initParallax, 60);
   connect();
 }
 
@@ -879,6 +959,7 @@ async function send() {
   inp.value = ''; inp.style.height = 'auto';
   document.getElementById('welcome')?.remove();
   addBubble('user', text);
+  particleBurst(sendBtn);
   showTyping('Nova is thinking…');
   streaming = true; sendBtn.disabled = true; stxt.textContent = 'Thinking…';
 
@@ -1207,7 +1288,7 @@ function renderMath(el) {
 // ── Bubble actions (copy + retry) ──────────────────────────
 function _makeBubbleActions() {
   const d = document.createElement('div'); d.className = 'bubble-actions';
-  d.innerHTML = `<button class="bub-btn" onclick="copyBubble(this)">⧉ Copy</button><button class="bub-btn" onclick="regenBubble(this)">↻ Retry</button>`;
+  d.innerHTML = `<button class="bub-btn" onclick="copyBubble(this)">⧉ Copy</button><button class="bub-btn" onclick="regenBubble(this)">↻ Retry</button><button class="bub-btn" onclick="speakBubble(this)">🔊 Speak</button>`;
   return d;
 }
 function copyBubble(btn) {
@@ -1434,7 +1515,196 @@ document.addEventListener('click', e => {
 // Apply saved language on boot
 applyLang(_lang);
 
-loadServerHistory(); connect(); inp.focus();
+// ── Glass Toast System ─────────────────────────────────────
+function toast(msg, type = 'info', duration = 3400) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icons = { info:'ℹ️', success:'✓', error:'⚠️', warn:'⚡' };
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>`;
+  c.appendChild(t);
+  const timer = setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 240); }, duration);
+  t.querySelector('.toast-close').addEventListener('click', () => clearTimeout(timer));
+}
+
+// ── Command Palette ────────────────────────────────────────
+let _cmdSel = 0, _cmdItems = [];
+
+function openCmdPal() {
+  document.getElementById('cmdpal').style.display = 'flex';
+  const inp2 = document.getElementById('cmdpal-input');
+  inp2.value = '';
+  _buildCmdItems('');
+  setTimeout(() => inp2.focus(), 30);
+}
+function closeCmdPal() {
+  document.getElementById('cmdpal').style.display = 'none';
+  _cmdSel = 0;
+}
+function _buildCmdItems(q) {
+  q = (q || '').toLowerCase().trim();
+  const filter = items => items.filter(a => !q || a.label.toLowerCase().includes(q) || (a.hint||'').toLowerCase().includes(q));
+  const actions = [
+    { icon:'✦', label:'New Chat', hint:'Start a fresh conversation', fn:()=>{ closeCmdPal(); newChat(); } },
+    { icon:'📤', label:'Export Chat', hint:'Download as Markdown', fn:()=>{ closeCmdPal(); exportChat(); } },
+    { icon:'🔗', label:'Share Current Chat', hint:'Generate a shareable link', fn:()=>{ closeCmdPal(); if(curMsgs.length) shareConv(uid); else toast('Start a chat first','warn'); } },
+    { icon:'🌐', label:'Switch Language', hint:'Open language selector', fn:()=>{ closeCmdPal(); toggleLangMenu(); } },
+    { icon:'🎤', label:'Start Voice Input', hint:'Record your voice', fn:()=>{ closeCmdPal(); toggleVoice(); } },
+    { icon:'🖼️', label:'Generate an Image', hint:'AI art via Pollinations', fn:()=>{ closeCmdPal(); inp.value='Generate an image of '; inp.focus(); } },
+    { icon:'🧮', label:'Calculator', hint:'Run a math calculation', fn:()=>{ closeCmdPal(); inp.value='Calculate: '; inp.focus(); } },
+  ];
+  const quickTools = [
+    { icon:'🌤', label:'Weather Now', hint:'Live weather data', fn:()=>{ closeCmdPal(); qt('What is the weather in Mumbai right now?'); } },
+    { icon:'📈', label:'Crypto Prices', hint:'Bitcoin & Ethereum live', fn:()=>{ closeCmdPal(); qt('What is the current price of Bitcoin and Ethereum?'); } },
+    { icon:'📰', label:'Breaking News', hint:'Top headlines today', fn:()=>{ closeCmdPal(); qt('Get the top 5 breaking news headlines today'); } },
+    { icon:'💱', label:'Currency Converter', hint:'USD to INR live rate', fn:()=>{ closeCmdPal(); qt('Convert 1000 USD to Indian Rupees with live rate'); } },
+    { icon:'📚', label:'Wikipedia', hint:'Search Wikipedia', fn:()=>{ closeCmdPal(); inp.value='Tell me about '; inp.focus(); } },
+  ];
+  const recents = (_serverConvs.length ? _serverConvs : sessions.slice(-6).reverse()).slice(0,5).map(c=>({
+    icon:'💬', label: c.title||c.t||'Conversation',
+    hint: c.updated_at ? 'Last active '+new Date(c.updated_at).toLocaleDateString() : 'Local conversation',
+    fn: c.id && _serverConvs.length ? ()=>{ closeCmdPal(); loadServerConv(c.id); }
+      : ()=>{ const i=sessions.findIndex(s=>s.t===(c.t||c.title)); closeCmdPal(); if(i>=0) loadSess(i); }
+  }));
+  const groups = [
+    { group:'Actions', items: filter(actions) },
+    { group:'Quick Tools', items: filter(quickTools) },
+    { group:'Recent Conversations', items: filter(recents) },
+  ].filter(g=>g.items.length);
+  _cmdItems = groups.flatMap(g=>g.items);
+  _cmdSel = 0;
+  const el = document.getElementById('cmdpal-results');
+  if (!_cmdItems.length) { el.innerHTML = `<div class="cmdpal-empty">No results for "${q||''}"</div>`; return; }
+  let idx = 0;
+  el.innerHTML = groups.map(g=>`
+    <div class="cmdpal-group-label">${g.group}</div>
+    ${g.items.map(item=>{
+      const i = idx++;
+      return `<div class="cmdpal-item${i===0?' sel':''}" data-ci="${i}" onclick="_cmdExec(${i})" onmouseenter="_cmdHover(${i})">
+        <div class="cmdpal-item-icon">${item.icon}</div>
+        <div class="cmdpal-item-text"><div class="cmdpal-item-label">${item.label}</div><div class="cmdpal-item-hint">${item.hint||''}</div></div>
+      </div>`;
+    }).join('')}`
+  ).join('');
+}
+function cmdSearch(q) { _buildCmdItems(q); }
+function _cmdExec(i) { const item=_cmdItems[i]; if(item) item.fn(); }
+function _cmdHover(i) {
+  document.querySelectorAll('.cmdpal-item.sel').forEach(el=>el.classList.remove('sel'));
+  const el = document.querySelector(`.cmdpal-item[data-ci="${i}"]`);
+  if(el) { el.classList.add('sel'); _cmdSel=i; }
+}
+function _cmdSetSel(n) {
+  _cmdSel = Math.max(0, Math.min(_cmdItems.length-1, n));
+  document.querySelectorAll('.cmdpal-item.sel').forEach(el=>el.classList.remove('sel'));
+  const el = document.querySelector(`.cmdpal-item[data-ci="${_cmdSel}"]`);
+  if(el) { el.classList.add('sel'); el.scrollIntoView({block:'nearest'}); }
+}
+function cmdKey(e) {
+  if (e.key==='ArrowDown') { e.preventDefault(); _cmdSetSel(_cmdSel+1); }
+  else if (e.key==='ArrowUp') { e.preventDefault(); _cmdSetSel(_cmdSel-1); }
+  else if (e.key==='Enter') { e.preventDefault(); _cmdExec(_cmdSel); }
+  else if (e.key==='Escape') { closeCmdPal(); }
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); openCmdPal(); }
+  if (e.key==='Escape' && document.getElementById('cmdpal').style.display==='flex') { e.preventDefault(); closeCmdPal(); }
+});
+
+// ── Spring Cursor Orb ──────────────────────────────────────
+(function() {
+  const orb = document.getElementById('cursor-orb');
+  if ('ontouchstart' in window) return;
+  let mx=-200,my=-200,ox=-200,oy=-200,vx=0,vy=0,active=false;
+  document.addEventListener('mousemove', e => {
+    mx=e.clientX; my=e.clientY;
+    if(!active){ active=true; document.body.classList.add('cursor-active'); }
+  });
+  document.addEventListener('mouseover', e => {
+    if(e.target.closest('button,a,.sug,.sb-item,.lang-opt,.cmdpal-item,.followup-chip,.bub-btn,.welcome-chip'))
+      document.body.classList.add('cursor-hover');
+    else document.body.classList.remove('cursor-hover');
+  });
+  (function tick() {
+    const spring=0.13, damp=0.77;
+    vx=(vx+(mx-ox)*spring)*damp; vy=(vy+(my-oy)*spring)*damp;
+    ox+=vx; oy+=vy;
+    orb.style.transform=`translate(calc(${ox}px - 50%),calc(${oy}px - 50%))`;
+    requestAnimationFrame(tick);
+  })();
+})();
+
+// ── Particle Burst ─────────────────────────────────────────
+function particleBurst(originEl) {
+  if(!originEl) return;
+  const r=originEl.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const colors=['#8B5CF6','#EC4899','#5B52F0','#06B6D4','#C084FC','#F472B6','#A78BFA'];
+  for(let i=0;i<20;i++) {
+    const p=document.createElement('div'); p.className='particle';
+    const size=3+Math.random()*5;
+    const angle=(Math.PI*2*i)/20+(Math.random()-.5)*.9;
+    const dist=35+Math.random()*65;
+    const dur=(.45+Math.random()*.35)+'s';
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${colors[i%colors.length]};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;--dur:${dur};opacity:.9`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 900);
+  }
+}
+
+// ── 3D Parallax on Welcome ─────────────────────────────────
+function _initParallax() {
+  const welcome=document.getElementById('welcome'); if(!welcome) return;
+  welcome.addEventListener('mousemove', e => {
+    const rct=welcome.getBoundingClientRect();
+    const dx=(e.clientX-rct.left-rct.width/2)/rct.width;
+    const dy=(e.clientY-rct.top-rct.height/2)/rct.height;
+    const layers=[
+      ['.welcome-glow',  -20, -12],
+      ['.welcome-heading',-11, -7],
+      ['.welcome-sub',    -6,  -4],
+      ['.welcome-chips',  -4,  -3],
+      ['.suggestions',    -2,  -1.5],
+    ];
+    layers.forEach(([sel,mx,my])=>{
+      const el=welcome.querySelector(sel);
+      if(el){ el.style.setProperty('--para-x',`${dx*mx}px`); el.style.setProperty('--para-y',`${dy*my}px`); }
+    });
+  });
+  welcome.addEventListener('mouseleave', () => {
+    ['.welcome-glow','.welcome-heading','.welcome-sub','.welcome-chips','.suggestions'].forEach(sel=>{
+      const el=welcome.querySelector(sel);
+      if(el){ el.style.setProperty('--para-x','0px'); el.style.setProperty('--para-y','0px'); }
+    });
+  });
+}
+
+// ── TTS Voice Playback ─────────────────────────────────────
+let _ttsActive = null;
+function speakBubble(btn) {
+  if(_ttsActive && speechSynthesis.speaking) {
+    speechSynthesis.cancel(); _ttsActive=null;
+    btn.textContent='🔊 Speak'; btn.classList.remove('speaking'); return;
+  }
+  const bubble=btn.closest('.msg-group').querySelector('.bubble.ai');
+  const raw=(bubble.dataset.raw||bubble.innerText).replace(/```[\s\S]*?```/g,'[code block]').replace(/[*_`#>\[\]]/g,'').trim();
+  if(!raw) return;
+  const utt=new SpeechSynthesisUtterance(raw);
+  utt.rate=1.05; utt.pitch=1.0; utt.volume=1.0;
+  speechSynthesis.onvoiceschanged=null;
+  const pick=()=>{
+    const vs=speechSynthesis.getVoices();
+    const en=vs.find(v=>v.lang.startsWith('en')&&v.name.includes('Google'))||vs.find(v=>v.lang.startsWith('en'));
+    if(en) utt.voice=en;
+  };
+  pick(); if(!utt.voice) speechSynthesis.onvoiceschanged=pick;
+  utt.onend=utt.onerror=()=>{ _ttsActive=null; btn.textContent='🔊 Speak'; btn.classList.remove('speaking'); };
+  _ttsActive=utt; speechSynthesis.speak(utt);
+  btn.textContent='⏹ Stop'; btn.classList.add('speaking');
+  toast('Playing AI response…','info',2000);
+}
+
+loadServerHistory(); connect(); inp.focus(); setTimeout(_initParallax, 100);
 </script>
 </body>
 </html>
