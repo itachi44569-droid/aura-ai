@@ -80,7 +80,8 @@ body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color
 
 /* Main */
 .main { flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0; }
-.topbar { padding:12px 24px;border-bottom:1px solid var(--glass-b);background:rgba(5,8,22,.7);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px; }
+.topbar { padding:12px 24px;border-bottom:none;background:rgba(5,8,22,.8);backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px;position:relative; }
+.topbar::after { content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,rgba(79,70,229,.45) 25%,rgba(124,58,237,.4) 55%,rgba(6,182,212,.28) 80%,transparent 100%); pointer-events:none; }
 .tb-l { display:flex;align-items:center;gap:12px; }
 .tb-title { font-size:13px;font-weight:600; }
 .model-chip { display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(79,70,229,.12);border:1px solid rgba(79,70,229,.25);font-size:11px;font-weight:500;color:#818CF8; }
@@ -105,14 +106,17 @@ body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color
 .welcome-glow { width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:34px;position:relative; }
 .welcome-glow::before { content:'';position:absolute;inset:-6px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--violet),var(--cyan));opacity:.2;filter:blur(16px);animation:gp 3s ease-in-out infinite; }
 @keyframes gp { 0%,100%{opacity:.2;transform:scale(1)} 50%{opacity:.5;transform:scale(1.1)} }
-.welcome-heading { font-size:clamp(26px,4vw,38px);font-weight:800;text-align:center;letter-spacing:-1.2px;line-height:1.1;background:linear-gradient(135deg,#fff 0%,#CBD5E1 60%,#94A3B8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
-.welcome-sub { font-size:14px;color:var(--text3);text-align:center;max-width:380px;line-height:1.75; }
+.welcome-heading { font-size:clamp(26px,4vw,40px);font-weight:800;text-align:center;letter-spacing:-1.5px;line-height:1.1;background:linear-gradient(135deg,#fff 0%,#C7D2FE 45%,#818CF8 80%,#A78BFA 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.welcome-sub { font-size:13.5px;color:var(--text3);text-align:center;max-width:400px;line-height:1.8; }
 .suggestions { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:580px;width:100%; }
-.sug { background:var(--glass);border:1px solid var(--glass-b);border-radius:12px;padding:14px 15px;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);text-align:left; }
-.sug:hover { background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.28);transform:translateY(-2px);box-shadow:0 8px 30px rgba(79,70,229,.12); }
-.sug-icon { font-size:18px;margin-bottom:7px; }
-.sug-title { font-size:12.5px;font-weight:500;color:#CBD5E1;line-height:1.3; }
-.sug-hint { font-size:11px;color:var(--text4);margin-top:3px; }
+.sug { background:var(--glass);border:1px solid var(--glass-b);border-radius:14px;padding:15px 16px;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);text-align:left;position:relative;overflow:hidden; }
+.sug::before { content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;background:linear-gradient(135deg,rgba(79,70,229,.1),rgba(124,58,237,.06),transparent); pointer-events:none; }
+.sug:hover { border-color:rgba(99,102,241,.42);transform:translateY(-3px);box-shadow:0 12px 36px rgba(79,70,229,.2),0 0 0 1px rgba(79,70,229,.08); }
+.sug:hover::before { opacity:1; }
+.sug:active { transform:translateY(-1px); }
+.sug-icon { font-size:20px;margin-bottom:8px; }
+.sug-title { font-size:12.5px;font-weight:600;color:#E2E8F0;line-height:1.35; }
+.sug-hint { font-size:11px;color:var(--text4);margin-top:4px; }
 
 /* Messages */
 .msg-group { display:flex;flex-direction:column;max-width:820px;width:100%;margin:0 auto;padding:4px 0;animation:mIn .28s cubic-bezier(.4,0,.2,1) both; }
@@ -124,7 +128,7 @@ body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color
 .av.ai::after { content:'';position:absolute;inset:-2px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--violet));opacity:.35;filter:blur(7px);z-index:-1; }
 .av.user { background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12); }
 .bubble { padding:11px 15px;font-size:14px;line-height:1.72;max-width:calc(100% - 44px);word-break:break-word;white-space:pre-wrap; }
-.bubble.ai    { background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:4px 14px 14px 14px;color:#E2E8F0; }
+.bubble.ai    { background:linear-gradient(135deg,rgba(79,70,229,.05) 0%,rgba(255,255,255,.03) 100%);border:1px solid rgba(79,70,229,.14);border-radius:4px 16px 16px 16px;color:#E2E8F0; }
 .bubble.user  { background:linear-gradient(135deg,rgba(79,70,229,.75),rgba(124,58,237,.75));border:1px solid rgba(79,70,229,.25);backdrop-filter:blur(8px);border-radius:14px 4px 14px 14px;color:#fff; }
 .bubble.error { background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);border-radius:4px 14px 14px 14px;color:#FCA5A5; }
 
@@ -179,6 +183,11 @@ textarea#input::placeholder { color:var(--text4); }
 .hist-search{width:100%;padding:6px 10px;border-radius:7px;border:1px solid var(--glass-b);background:rgba(255,255,255,.04);color:var(--text);font:12px 'Inter',sans-serif;outline:none;transition:border .15s}
 .hist-search:focus{border-color:rgba(79,70,229,.4)}
 .hist-search::placeholder{color:var(--text4)}
+/* Language selector */
+.lang-menu{position:absolute;top:calc(100% + 8px);right:0;background:rgba(8,12,30,.97);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px;min-width:170px;backdrop-filter:blur(24px);z-index:300;display:none;box-shadow:0 16px 48px rgba(0,0,0,.65),0 0 0 1px rgba(79,70,229,.1);animation:fadeUp .14s ease}
+.lang-opt{padding:8px 12px;border-radius:7px;font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .12s;user-select:none}
+.lang-opt:hover{background:rgba(79,70,229,.14);color:#fff}
+.lang-opt.active{background:rgba(79,70,229,.2);color:#818CF8;font-weight:500}
 /* AI-generated images in bubbles */
 .bubble.ai img{max-width:100%;border-radius:12px;margin:8px 0;display:block;border:1px solid rgba(255,255,255,.08)}
 /* Share modal */
@@ -331,6 +340,13 @@ textarea#input::placeholder { color:var(--text4); }
         <div class="tb-badge mem">⚡ Memory</div>
         <div class="tb-badge kb">📚 Knowledge Base</div>
         <div class="tb-badge tools">🔧 11 Tools</div>
+        <div style="position:relative;flex-shrink:0">
+          <button class="tb-export" id="lang-btn" onclick="toggleLangMenu()" title="Switch language">
+            🌐 <span id="lang-label" class="tb-link-label">EN</span>
+            <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="lang-menu" id="lang-menu"></div>
+        </div>
         <button class="tb-export" onclick="exportChat()" title="Export chat" style="gap:5px">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span class="tb-link-label">Export</span>
@@ -778,8 +794,18 @@ function newChat() {
   if (ws) { ws.close(); ws = null; }
   uid = 'u_' + Math.random().toString(36).slice(2,9);
   curMsgs = []; curBubble = null; chatEl.innerHTML = '';
+  const s = _langStrings();
   const w = document.createElement('div'); w.id = 'welcome'; w.className = 'welcome';
-  w.innerHTML = `<div class="welcome-glow">✦</div><div class="welcome-heading">New Chat</div><div class="welcome-sub">All 10 tools ready. Ask me anything.</div>`;
+  w.innerHTML = `
+    <div class="welcome-glow">✦</div>
+    <div class="welcome-heading">${s.heading}</div>
+    <div class="welcome-sub">${s.sub}</div>
+    <div class="suggestions">
+      <div class="sug" onclick="qt('What is the weather in Mumbai right now?')"><div class="sug-icon">🌤</div><div class="sug-title">${s.s1}</div><div class="sug-hint">${s.s1h}</div></div>
+      <div class="sug" onclick="qt('What is the current price of Bitcoin and Ethereum?')"><div class="sug-icon">📈</div><div class="sug-title">${s.s2}</div><div class="sug-hint">${s.s2h}</div></div>
+      <div class="sug" onclick="qt('Search the web: latest AI news today')"><div class="sug-icon">🌐</div><div class="sug-title">${s.s3}</div><div class="sug-hint">${s.s3h}</div></div>
+      <div class="sug" onclick="qt('Convert 1000 USD to Indian Rupees with live rate')"><div class="sug-icon">💱</div><div class="sug-title">${s.s4}</div><div class="sug-hint">${s.s4h}</div></div>
+    </div>`;
   chatEl.appendChild(w);
   connect();
 }
@@ -1200,6 +1226,174 @@ function copyShareUrl() {
     setTimeout(() => btn.textContent = 'Copy', 2000);
   }).catch(() => { input.select(); document.execCommand('copy'); });
 }
+
+// ── Multi-language system ───────────────────────────────────
+const LANGS = {
+  en:{ flag:'🇬🇧', name:'English', dir:'ltr', s:{
+    newChat:'New Conversation', pastConvs:'Past Conversations', search:'🔍 Search…',
+    heading:'What can I help<br>you build today?', sub:'Powered by Llama 3.3 70B · 10 live tools · Real-time web access · Persistent memory',
+    ph:'Ask Nova anything — weather, prices, news, math…', hint:'Enter to send · Shift+Enter for newline',
+    status:'Online · Ready', mem:'Memory: Active', tools:'11 Tools Available',
+    s1:'Weather in Mumbai right now', s1h:'Live weather data via Open-Meteo',
+    s2:'Bitcoin price right now', s2h:'Real-time crypto data',
+    s3:'Search: latest AI news today', s3h:'Live DuckDuckGo web search',
+    s4:'Convert 500 USD to INR', s4h:'Live forex rates',
+  }},
+  hi:{ flag:'🇮🇳', name:'हिन्दी', dir:'ltr', s:{
+    newChat:'नई बातचीत', pastConvs:'पिछली बातचीत', search:'🔍 खोजें…',
+    heading:'आज मैं आपकी<br>क्या मदद करूं?', sub:'Llama 3.3 70B द्वारा संचालित · 10 लाइव टूल्स · रियल-टाइम वेब एक्सेस',
+    ph:'Nova से कुछ भी पूछें — मौसम, कीमतें, खबरें, गणित…', hint:'भेजने के लिए Enter · नई लाइन के लिए Shift+Enter',
+    status:'ऑनलाइन · तैयार', mem:'मेमोरी: सक्रिय', tools:'11 टूल्स उपलब्ध',
+    s1:'मुंबई में अभी मौसम', s1h:'लाइव मौसम डेटा',
+    s2:'Bitcoin की अभी कीमत', s2h:'रियल-टाइम क्रिप्टो',
+    s3:'आज की AI खबरें खोजें', s3h:'लाइव वेब सर्च',
+    s4:'500 USD को INR में बदलें', s4h:'लाइव फॉरेक्स रेट',
+  }},
+  es:{ flag:'🇪🇸', name:'Español', dir:'ltr', s:{
+    newChat:'Nueva conversación', pastConvs:'Conversaciones pasadas', search:'🔍 Buscar…',
+    heading:'¿En qué puedo<br>ayudarte hoy?', sub:'Impulsado por Llama 3.3 70B · 10 herramientas en vivo · Acceso web en tiempo real',
+    ph:'Pregunta a Nova — clima, precios, noticias, matemáticas…', hint:'Enter para enviar · Shift+Enter para nueva línea',
+    status:'En línea · Listo', mem:'Memoria: Activa', tools:'11 Herramientas',
+    s1:'Clima en Madrid ahora', s1h:'Datos meteorológicos en vivo',
+    s2:'Precio del Bitcoin ahora', s2h:'Datos cripto en tiempo real',
+    s3:'Buscar: noticias de IA hoy', s3h:'Búsqueda web en vivo',
+    s4:'Convertir 500 USD a EUR', s4h:'Tasas de cambio en vivo',
+  }},
+  fr:{ flag:'🇫🇷', name:'Français', dir:'ltr', s:{
+    newChat:'Nouvelle conversation', pastConvs:'Conversations passées', search:'🔍 Rechercher…',
+    heading:"Comment puis-je<br>vous aider aujourd'hui ?", sub:'Propulsé par Llama 3.3 70B · 10 outils en direct · Accès web en temps réel',
+    ph:'Demandez à Nova — météo, prix, actualités, maths…', hint:'Entrée pour envoyer · Shift+Entrée pour nouvelle ligne',
+    status:'En ligne · Prêt', mem:'Mémoire: Active', tools:'11 Outils',
+    s1:'Météo à Paris maintenant', s1h:'Données météo en direct',
+    s2:'Prix du Bitcoin maintenant', s2h:'Données crypto en temps réel',
+    s3:'Rechercher: actualités IA', s3h:'Recherche web en direct',
+    s4:'Convertir 500 USD en EUR', s4h:'Taux de change en direct',
+  }},
+  de:{ flag:'🇩🇪', name:'Deutsch', dir:'ltr', s:{
+    newChat:'Neues Gespräch', pastConvs:'Vergangene Gespräche', search:'🔍 Suchen…',
+    heading:'Womit kann ich<br>Ihnen helfen?', sub:'Powered by Llama 3.3 70B · 10 Live-Tools · Echtzeit-Webzugang',
+    ph:'Fragen Sie Nova — Wetter, Preise, Nachrichten, Mathe…', hint:'Enter zum Senden · Shift+Enter für neue Zeile',
+    status:'Online · Bereit', mem:'Speicher: Aktiv', tools:'11 Tools',
+    s1:'Wetter in Berlin jetzt', s1h:'Live-Wetterdaten',
+    s2:'Bitcoin-Preis jetzt', s2h:'Echtzeit-Kryptodaten',
+    s3:'Suche: KI-News heute', s3h:'Live-Websuche',
+    s4:'500 USD in EUR umrechnen', s4h:'Live-Wechselkurse',
+  }},
+  ar:{ flag:'🇸🇦', name:'العربية', dir:'rtl', s:{
+    newChat:'محادثة جديدة', pastConvs:'المحادثات السابقة', search:'🔍 بحث…',
+    heading:'كيف يمكنني<br>مساعدتك اليوم؟', sub:'مدعوم بـ Llama 3.3 70B · 10 أدوات مباشرة · وصول فوري للويب',
+    ph:'اسأل نوفا — الطقس، الأسعار، الأخبار، الرياضيات…', hint:'Enter للإرسال · Shift+Enter لسطر جديد',
+    status:'متصل · جاهز', mem:'الذاكرة: نشطة', tools:'11 أداة',
+    s1:'الطقس في دبي الآن', s1h:'بيانات الطقس المباشرة',
+    s2:'سعر البيتكوين الآن', s2h:'بيانات العملات الرقمية',
+    s3:'بحث: أخبار الذكاء الاصطناعي', s3h:'بحث ويب مباشر',
+    s4:'تحويل 500 دولار إلى درهم', s4h:'أسعار الصرف المباشرة',
+  }},
+  zh:{ flag:'🇨🇳', name:'中文', dir:'ltr', s:{
+    newChat:'新对话', pastConvs:'历史对话', search:'🔍 搜索…',
+    heading:'今天我能<br>帮您做什么？', sub:'由 Llama 3.3 70B 驱动 · 10个实时工具 · 实时网络访问',
+    ph:'问Nova任何问题 — 天气、价格、新闻、数学…', hint:'Enter发送 · Shift+Enter换行',
+    status:'在线 · 就绪', mem:'记忆：已激活', tools:'11个工具',
+    s1:'北京现在天气', s1h:'实时天气数据',
+    s2:'比特币实时价格', s2h:'实时加密货币数据',
+    s3:'搜索：今日AI新闻', s3h:'实时网络搜索',
+    s4:'500美元兑换人民币', s4h:'实时汇率',
+  }},
+  ja:{ flag:'🇯🇵', name:'日本語', dir:'ltr', s:{
+    newChat:'新しい会話', pastConvs:'過去の会話', search:'🔍 検索…',
+    heading:'今日はどのように<br>お手伝いできますか？', sub:'Llama 3.3 70B搭載 · 10のライブツール · リアルタイムウェブアクセス',
+    ph:'Novaに何でも聞いてください — 天気、価格、ニュース、数学…', hint:'Enter送信 · Shift+Enter改行',
+    status:'オンライン · 準備完了', mem:'メモリ：有効', tools:'11ツール',
+    s1:'東京の現在の天気', s1h:'ライブ気象データ',
+    s2:'ビットコインの現在価格', s2h:'リアルタイム仮想通貨',
+    s3:'検索：今日のAIニュース', s3h:'ライブウェブ検索',
+    s4:'500ドルを円に変換', s4h:'リアルタイム為替レート',
+  }},
+  pt:{ flag:'🇧🇷', name:'Português', dir:'ltr', s:{
+    newChat:'Nova conversa', pastConvs:'Conversas passadas', search:'🔍 Pesquisar…',
+    heading:'Como posso<br>ajudá-lo hoje?', sub:'Powered by Llama 3.3 70B · 10 ferramentas ao vivo · Acesso web em tempo real',
+    ph:'Pergunte à Nova — clima, preços, notícias, matemática…', hint:'Enter para enviar · Shift+Enter para nova linha',
+    status:'Online · Pronto', mem:'Memória: Ativa', tools:'11 Ferramentas',
+    s1:'Clima em São Paulo agora', s1h:'Dados meteorológicos ao vivo',
+    s2:'Preço do Bitcoin agora', s2h:'Dados cripto em tempo real',
+    s3:'Pesquisar: notícias de IA hoje', s3h:'Pesquisa web ao vivo',
+    s4:'Converter 500 USD para BRL', s4h:'Taxas de câmbio ao vivo',
+  }},
+};
+
+let _lang = localStorage.getItem('nv_lang') || 'en';
+
+function _langStrings() { return (LANGS[_lang] || LANGS.en).s; }
+
+function _renderLangMenu() {
+  const menu = document.getElementById('lang-menu');
+  menu.innerHTML = Object.entries(LANGS).map(([code, L]) =>
+    `<div class="lang-opt${code === _lang ? ' active' : ''}" onclick="applyLang('${code}')">
+      <span style="font-size:16px">${L.flag}</span>
+      <span>${L.name}</span>
+      ${code === _lang ? '<span style="margin-left:auto;font-size:10px;color:#818CF8">✓</span>' : ''}
+    </div>`
+  ).join('');
+}
+
+function toggleLangMenu() {
+  const menu = document.getElementById('lang-menu');
+  const isOpen = menu.style.display === 'block';
+  if (!isOpen) { _renderLangMenu(); menu.style.display = 'block'; }
+  else menu.style.display = 'none';
+}
+
+function applyLang(code) {
+  const L = LANGS[code]; if (!L) return;
+  _lang = code;
+  localStorage.setItem('nv_lang', code);
+  const s = L.s;
+  // Direction
+  document.documentElement.setAttribute('dir', L.dir);
+  // Topbar label
+  document.getElementById('lang-label').textContent = code.toUpperCase();
+  document.getElementById('lang-menu').style.display = 'none';
+  // Input area
+  document.getElementById('input').placeholder = s.ph;
+  document.querySelector('.input-hint').textContent = s.hint;
+  // Sidebar
+  const lbls = document.querySelectorAll('.sb-lbl');
+  if (lbls[1]) lbls[1].textContent = s.pastConvs;
+  const hs = document.getElementById('hist-search');
+  if (hs) hs.placeholder = s.search;
+  // Status bar
+  document.getElementById('stxt').textContent = s.status;
+  const us = document.getElementById('user-status');
+  if (us) us.textContent = s.mem;
+  // New Chat button — update text node
+  const ncBtn = document.querySelector('.new-chat');
+  if (ncBtn) {
+    Array.from(ncBtn.childNodes).forEach(n => { if (n.nodeType === 3 && n.textContent.trim()) n.textContent = ' ' + s.newChat; });
+  }
+  // Welcome screen (if still showing)
+  const wh = document.querySelector('#welcome .welcome-heading');
+  if (wh) wh.innerHTML = s.heading;
+  const wsub = document.querySelector('#welcome .welcome-sub');
+  if (wsub) wsub.textContent = s.sub;
+  const sugs = document.querySelectorAll('#welcome .sug');
+  if (sugs.length >= 4) {
+    [[s.s1,s.s1h],[s.s2,s.s2h],[s.s3,s.s3h],[s.s4,s.s4h]].forEach(([t,h], i) => {
+      sugs[i].querySelector('.sug-title').textContent = t;
+      sugs[i].querySelector('.sug-hint').textContent = h;
+    });
+  }
+}
+
+// Close lang menu on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#lang-btn') && !e.target.closest('#lang-menu')) {
+    const m = document.getElementById('lang-menu');
+    if (m) m.style.display = 'none';
+  }
+});
+
+// Apply saved language on boot
+applyLang(_lang);
 
 loadServerHistory(); connect(); inp.focus();
 </script>
