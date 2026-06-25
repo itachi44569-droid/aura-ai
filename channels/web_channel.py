@@ -25,9 +25,15 @@ Endpoints:
   GET  /login             — login page
 """
 import os
+import re
+import time
+import asyncio
+import logging
+from collections import defaultdict
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -49,10 +55,90 @@ from core.auth import (
 STATIC_DIR   = Path(__file__).parent / "static"
 ADMIN_SECRET = os.getenv("ADMIN_PASSWORD", "admin123")
 
+# ── Security config ───────────────────────────────────────────────────────────
+_log = logging.getLogger("security")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-def _check_admin(pw: str | None):
+CHAT_RATE_LIMIT    = int(os.getenv("CHAT_RATE_LIMIT", "25"))   # requests per hour per IP
+ADMIN_MAX_FAILS    = 5
+ADMIN_LOCKOUT_SECS = 15 * 60  # 15 minutes
+MAX_MESSAGE_LEN    = 2000
+
+# In-memory stores (reset on restart — fine for single Railway instance)
+_chat_hits: dict[str, list[float]]        = defaultdict(list)  # IP -> [timestamps]
+_admin_fails: dict[str, tuple[int, float]] = {}                 # IP -> (count, first_fail_ts)
+_login_fails: dict[str, tuple[int, float]] = {}                 # IP -> (count, first_fail_ts)
+
+
+def _client_ip(request: Request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _rate_check_chat(ip: str) -> bool:
+    now = time.time()
+    window_start = now - 3600
+    _chat_hits[ip] = [t for t in _chat_hits[ip] if t > window_start]
+    if len(_chat_hits[ip]) >= CHAT_RATE_LIMIT:
+        return False
+    _chat_hits[ip].append(now)
+    return True
+
+
+def _lockout_check(store: dict, ip: str) -> bool:
+    if ip not in store:
+        return True
+    count, first = store[ip]
+    if count >= ADMIN_MAX_FAILS:
+        if time.time() - first < ADMIN_LOCKOUT_SECS:
+            return False
+        del store[ip]
+    return True
+
+
+def _lockout_fail(store: dict, ip: str):
+    if ip not in store:
+        store[ip] = (1, time.time())
+    else:
+        count, first = store[ip]
+        store[ip] = (count + 1, first)
+
+
+def _lockout_mins_left(store: dict, ip: str) -> int:
+    count, first = store.get(ip, (0, 0))
+    return max(1, int((ADMIN_LOCKOUT_SECS - (time.time() - first)) / 60) + 1)
+
+
+def _sanitize_message(text: str) -> str:
+    text = re.sub(r'<[^>]*>', '', text)  # strip HTML tags
+    return text[:MAX_MESSAGE_LEN]
+
+
+def _check_admin(pw: str | None, request: Request):
+    ip = _client_ip(request)
+    if not _lockout_check(_admin_fails, ip):
+        mins = _lockout_mins_left(_admin_fails, ip)
+        _log.warning(f"[admin-lockout] IP={ip} locked out ({mins}m remaining)")
+        raise HTTPException(status_code=429, detail=f"Too many failed attempts. Try again in {mins} minutes.")
     if pw != ADMIN_SECRET:
+        _lockout_fail(_admin_fails, ip)
+        count = _admin_fails.get(ip, (0,))[0]
+        _log.warning(f"[admin-fail] IP={ip} wrong password ({count}/{ADMIN_MAX_FAILS})")
         raise HTTPException(status_code=401, detail="Wrong admin password")
+    _admin_fails.pop(ip, None)  # clear on success
+
+
+class _SecurityHeaders(BaseHTTPMiddleware):
+    """Add standard security headers to every response."""
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("X-XSS-Protection", "1; mode=block")
+        return response
 
 
 def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
@@ -69,11 +155,44 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         version     = "1.0.0",
     )
 
+    # CORS — allow Railway domain + Vercel domain (for ISP bypass) + any custom origin
+    _railway_domain = os.getenv("RAILWAY_DOMAIN", "")
+    _vercel_url     = os.getenv("VERCEL_URL", "")
+    _extra_origins  = [o for o in [
+        f"https://{_railway_domain}" if _railway_domain else None,
+        f"http://{_railway_domain}"  if _railway_domain else None,
+        f"https://{_vercel_url}"     if _vercel_url else None,
+    ] if o]
+    _cors_origins = _extra_origins if _extra_origins else ["*"]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"], allow_credentials=True,
+        allow_origins=_cors_origins, allow_credentials=bool(_extra_origins),
         allow_methods=["*"], allow_headers=["*"],
     )
+    app.add_middleware(_SecurityHeaders)
+
+    # ── Keepalive ping — prevents Railway/Render cold starts ──────────────────
+    @app.on_event("startup")
+    async def _start_keepalive():
+        _domain = os.getenv("RAILWAY_DOMAIN", "") or os.getenv("VERCEL_URL", "")
+        _port   = os.getenv("PORT", "8000")
+        _base   = f"https://{_domain}" if _domain else f"http://localhost:{_port}"
+
+        async def _ping_loop():
+            import aiohttp
+            await asyncio.sleep(60)  # wait 1 minute after startup before first ping
+            while True:
+                try:
+                    async with aiohttp.ClientSession() as s:
+                        async with s.get(f"{_base}/health",
+                                         timeout=aiohttp.ClientTimeout(total=10)) as r:
+                            _log.info(f"[keepalive] ping OK ({r.status})")
+                except Exception as exc:
+                    _log.debug(f"[keepalive] ping failed: {exc}")
+                await asyncio.sleep(270)  # every 4.5 minutes (< 5-minute timeout)
+
+        asyncio.create_task(_ping_loop())
 
     # ── Models ────────────────────────────────────────────────────────────────
 
@@ -178,7 +297,12 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     # ── Chat ──────────────────────────────────────────────────────────────────
 
     @app.post("/chat", response_model=ChatResponse)
-    async def chat(req: ChatRequest):
+    async def chat(req: ChatRequest, request: Request):
+        ip = _client_ip(request)
+        if not _rate_check_chat(ip):
+            _log.warning(f"[chat-ratelimit] IP={ip} exceeded {CHAT_RATE_LIMIT}/hour")
+            raise HTTPException(status_code=429, detail=f"Rate limit exceeded — max {CHAT_RATE_LIMIT} messages per hour.")
+        req.message = _sanitize_message(req.message)
         tier = "free"
         if req.api_key:
             key_info = validate_key(req.api_key)
@@ -196,12 +320,12 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.websocket("/ws/{user_id}")
-    async def websocket_chat(ws: WebSocket, user_id: str):
+    async def websocket_chat(ws: WebSocket, user_id: str, model: str = "deep"):
         await ws.accept()
         try:
             while True:
                 user_msg = await ws.receive_text()
-                async for chunk in brain.think_stream(user_id, user_msg):
+                async for chunk in brain.think_stream(user_id, user_msg, model_pref=model):
                     await ws.send_text(chunk)
                 await ws.send_text("\n[DONE]")
         except Exception:
@@ -264,7 +388,7 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         caption: str = "",
     ):
         """
-        Accept PDF, TXT, DOCX, or MD files, extract text, and let Nova answer
+        Accept PDF, TXT, DOCX, or MD files, extract text, and let Aura answer
         questions about the document. Truncates at 20 000 chars (~5 000 words).
         """
         filename = file.filename or "document"
@@ -276,8 +400,8 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
             )
         try:
             content = await file.read()
-            if len(content) > 20 * 1024 * 1024:
-                raise HTTPException(status_code=400, detail="File too large — max 20 MB.")
+            if len(content) > 10 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail="File too large — max 10 MB.")
 
             # ── Text extraction ───────────────────────────────────────────────
             text = ""
@@ -348,7 +472,7 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     ):
         """
         Accept a browser audio blob (webm/wav/ogg), transcribe with Groq Whisper,
-        then get Nova's response. Returns {transcript, response}.
+        then get Aura's response. Returns {transcript, response}.
         """
         try:
             audio_bytes = await audio.read()
@@ -421,7 +545,7 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     async def public_config():
         s = get_settings()
         return {
-            "bot_name":      s.get("bot_name", "Nova AI"),
+            "bot_name":      s.get("bot_name", "Aura AI"),
             "logo_emoji":    s.get("logo_emoji", "✦"),
             "primary_color": s.get("primary_color", "#4F46E5"),
             "greeting":      s.get("greeting", ""),
@@ -438,10 +562,19 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         return result
 
     @app.post("/auth/login")
-    async def auth_login(req: LoginRequest):
+    async def auth_login(req: LoginRequest, request: Request):
+        ip = _client_ip(request)
+        if not _lockout_check(_login_fails, ip):
+            mins = _lockout_mins_left(_login_fails, ip)
+            _log.warning(f"[login-lockout] IP={ip} locked out ({mins}m remaining)")
+            raise HTTPException(status_code=429, detail=f"Too many failed login attempts. Try again in {mins} minutes.")
         result = login_user(req.email, req.password)
         if not result["ok"]:
+            _lockout_fail(_login_fails, ip)
+            count = _login_fails.get(ip, (0,))[0]
+            _log.warning(f"[login-fail] IP={ip} email={req.email} ({count}/{ADMIN_MAX_FAILS})")
             raise HTTPException(status_code=401, detail=result.get("error", "Login failed"))
+        _login_fails.pop(ip, None)
         return result
 
     @app.post("/auth/logout")
@@ -462,31 +595,31 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
     # ── Admin endpoints ───────────────────────────────────────────────────────
 
     @app.get("/admin/stats")
-    async def admin_stats(x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_stats(request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         s = brain.get_stats()
         return {**s, "tools_enabled": [t.name for t in brain.tools], "rag_enabled": rag is not None}
 
     @app.get("/admin/keys")
-    async def admin_list_keys(x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_list_keys(request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         return {"keys": list_keys()}
 
     @app.post("/admin/keys/generate")
-    async def admin_gen_key(req: GenKeyRequest, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_gen_key(req: GenKeyRequest, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         key = generate_key(label=req.label, daily_limit=req.daily_limit)
         return {"key": key, "label": req.label, "daily_limit": req.daily_limit}
 
     @app.post("/admin/keys/revoke")
-    async def admin_revoke_key(req: RevokeKeyRequest, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_revoke_key(req: RevokeKeyRequest, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         revoke_key(req.key)
         return {"status": "revoked", "key": req.key}
 
     @app.get("/admin/analytics")
-    async def admin_analytics(x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_analytics(request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         s = brain.get_stats()
         users = list_users()
         daily_msgs = brain._analytics.get_daily_counts("message", days=30)
@@ -500,13 +633,13 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         }
 
     @app.get("/admin/settings")
-    async def admin_get_settings(x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_get_settings(request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         return get_settings()
 
     @app.post("/admin/settings")
-    async def admin_update_settings(req: SettingsUpdateRequest, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_update_settings(req: SettingsUpdateRequest, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         try:
             raw = req.model_dump()
         except AttributeError:
@@ -514,33 +647,32 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         updates = {k: v for k, v in raw.items() if v is not None}
         if updates:
             update_settings(updates)
-            # Apply persona addon to brain in-memory immediately
             if "persona_addon" in updates:
                 brain.system_addon = updates["persona_addon"]
         return {"ok": True, "updated": list(updates.keys())}
 
     @app.get("/admin/users")
-    async def admin_list_users(x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_list_users(request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         return {"users": list_users()}
 
     @app.post("/admin/users")
-    async def admin_create_user(req: CreateUserRequest, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_create_user(req: CreateUserRequest, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         result = register_user(req.email, req.password, req.name)
         if not result["ok"]:
             raise HTTPException(status_code=409, detail=result.get("error", "Failed"))
         return result
 
     @app.delete("/admin/users/{user_id}")
-    async def admin_deactivate_user(user_id: int, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_deactivate_user(user_id: int, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         deactivate_user(user_id)
         return {"ok": True}
 
     @app.post("/admin/users/{user_id}/activate")
-    async def admin_activate_user(user_id: int, x_admin_password: Optional[str] = Header(None)):
-        _check_admin(x_admin_password)
+    async def admin_activate_user(user_id: int, request: Request, x_admin_password: Optional[str] = Header(None)):
+        _check_admin(x_admin_password, request)
         activate_user(user_id)
         return {"ok": True}
 
@@ -595,7 +727,7 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         if not conv:
             return HTMLResponse("<html><body style='font-family:sans-serif;text-align:center;padding:80px;background:#050816;color:#F8FAFC'><h2>Link not found</h2><br><a href='/' style='color:#818CF8'>Start a new chat →</a></body></html>", status_code=404)
         cfg = get_settings()
-        bot_name = cfg.get("bot_name", "Nova AI")
+        bot_name = cfg.get("bot_name", "Aura AI")
         logo = cfg.get("logo_emoji", "✦")
         color = cfg.get("primary_color", "#4F46E5")
         msgs_json = _json.dumps(conv["messages"])

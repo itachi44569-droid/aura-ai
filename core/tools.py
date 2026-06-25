@@ -394,7 +394,7 @@ async def wikipedia_search(query: str, sentences: int = 3) -> dict:
     name="read_webpage",
     description=(
         "Fetch and read the full content of any webpage. Use when the user shares a URL "
-        "and wants Nova to read, summarize, or answer questions about it."
+        "and wants Aura to read, summarize, or answer questions about it."
     ),
     parameters={
         "url": {
@@ -482,11 +482,14 @@ async def read_webpage(url: str) -> dict:
 @tool(
     name="generate_image",
     description=(
-        "Generate a high-quality image from a text description using Flux AI. "
-        "Use whenever the user asks to create, draw, generate, make, paint, or visualise "
-        "an image, picture, photo, artwork, or illustration. "
-        "Write a rich, detailed visual prompt for best results — include style, lighting, mood, "
-        "colors, and composition details. Return the markdown image tag so the image renders inline."
+        "Generate an image from a text prompt. "
+        "ONLY call this tool when the user explicitly uses phrases like: "
+        "'create an image', 'generate an image', 'make an image', 'draw', 'draw me', "
+        "'show me a picture of', 'illustrate', 'make a picture', 'paint me'. "
+        "Do NOT use for: 'what does X look like', 'show me news', 'tell me about', "
+        "'explain', 'describe', or any question that does not explicitly ask to CREATE a new image. "
+        "Conversation always takes priority — only switch to image generation on unambiguous intent. "
+        "When called, expand the user's prompt into a rich visual description with style, lighting, and composition."
     ),
     parameters={
         "prompt": {
@@ -508,7 +511,8 @@ async def read_webpage(url: str) -> dict:
 )
 async def generate_image(prompt: str, width: int = 1024, height: int = 768,
                          style: str = "photorealistic") -> dict:
-    import urllib.parse, time, random
+    import urllib.parse, random
+    import aiohttp
 
     style_suffixes = {
         "photorealistic":  "photorealistic, 8K UHD, sharp focus, professional photography, detailed",
@@ -531,6 +535,28 @@ async def generate_image(prompt: str, width: int = 1024, height: int = 768,
         f"https://image.pollinations.ai/prompt/{encoded}"
         f"?model=flux&width={w}&height={h}&nologo=true&enhance=true&seed={seed}"
     )
+
+    # Trigger generation and verify it works within 45 seconds
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                url,
+                timeout=aiohttp.ClientTimeout(total=45),
+                headers={"User-Agent": "Mozilla/5.0"},
+            ) as resp:
+                if resp.status != 200:
+                    return {"error": f"Image generation failed (HTTP {resp.status}). Try a different prompt."}
+                # Read the first chunk to confirm generation started, then discard
+                await resp.content.read(64)
+    except asyncio.TimeoutError:
+        return {
+            "error": (
+                "Image generation timed out after 45 seconds. "
+                "The AI image server may be busy — try again in a moment, or use a simpler prompt."
+            )
+        }
+    except Exception as e:
+        return {"error": f"Image generation failed: {str(e)[:120]}. Please try again."}
 
     return {
         "image_url": url,

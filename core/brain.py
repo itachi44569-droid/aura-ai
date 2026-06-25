@@ -138,9 +138,18 @@ class Brain:
         return response
 
     async def think_stream(self, user_id: str, user_msg: str,
-                           channel: str = "telegram") -> AsyncIterator[str]:
+                           channel: str = "telegram",
+                           model_pref: str = "deep") -> AsyncIterator[str]:
         """Streaming version. Tools run first (non-streaming), then answer streams."""
         t0 = time.time()
+        _ANSWER = {
+            "fast":   MODEL_FAST,
+            "smart":  MODEL_TOOL,
+            "deep":   MODEL_REASON,
+            "gemini": None,
+        }
+        _answer_model = _ANSWER.get(model_pref, MODEL_REASON)
+        _use_gemini   = (model_pref == "gemini") and bool(os.getenv("GEMINI_API_KEY"))
 
         ok, reason = rate_limiter.check(user_id)
         if not ok:
@@ -175,9 +184,9 @@ class Brain:
             if full_response:
                 yield full_response
         else:
-            # ── Try Gemini Flash first (free, larger context, very capable) ──
+            # ── Model routing: Gemini only when explicitly chosen ──
             gemini_ok = False
-            if os.getenv("GEMINI_API_KEY"):
+            if _use_gemini:
                 try:
                     async for chunk in self._gemini_stream(messages):
                         if chunk:
@@ -185,13 +194,12 @@ class Brain:
                             yield chunk
                     gemini_ok = bool(full_response)
                 except Exception as e:
-                    print(f"[Brain] Gemini failed, falling back to Groq R1: {e}")
+                    print(f"[Brain] Gemini failed, falling back to Groq: {e}")
 
-            # ── Fall back to DeepSeek R1 on Groq with think-tag filtering ──
             if not gemini_ok:
                 try:
                     stream = await self._groq.chat.completions.create(
-                        model      = MODEL_REASON,
+                        model      = _answer_model,
                         messages   = messages,
                         max_tokens = MAX_TOKENS,
                         temperature= self.personality.get("temperature", 0.7),

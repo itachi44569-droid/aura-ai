@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from contextlib import contextmanager
 from datetime import datetime
 
-SHORT_TERM_WINDOW = 12   # messages kept in RAM per user
+SHORT_TERM_WINDOW = 20   # messages kept in RAM per user
 SUMMARIZE_AFTER   = 30   # messages before compressing to long-term
 
 # ── Database setup ─────────────────────────────────────────────────────────────

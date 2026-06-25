@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Nova AI</title>
+<title>Admin — Aura AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -160,7 +160,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
   <header class="hdr">
     <div class="hdr-logo">
       <div class="hdr-logo-icon" id="h-emoji">✦</div>
-      <span id="h-name">Nova AI</span>
+      <span id="h-name">Aura AI</span>
       <span class="badge">Admin</span>
     </div>
     <nav class="nav">
@@ -258,11 +258,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
     <div class="tab-panel" id="tab-branding">
       <div class="form-card">
         <h3>White-Label Branding</h3>
-        <p class="desc">Changes apply on the next page load. Deploy these settings to give Nova a custom identity for your client.</p>
+        <p class="desc">Changes apply on the next page load. Deploy these settings to give Aura a custom identity for your client.</p>
         <div class="form-row">
           <div class="fg">
             <label>Bot Name</label>
-            <input id="b-name" type="text" placeholder="Nova AI">
+            <input id="b-name" type="text" placeholder="Aura AI">
             <span class="hint">Shown in the header and browser tab title</span>
           </div>
           <div class="fg">
@@ -278,7 +278,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
         </div>
         <div class="fg" style="margin-bottom:16px">
           <label>Greeting Message</label>
-          <textarea id="b-greeting" rows="3" placeholder="Hey! I'm Nova. What do you need?"></textarea>
+          <textarea id="b-greeting" rows="3" placeholder="Hey! I'm Aura. What do you need?"></textarea>
           <span class="hint">Shown on the welcome screen below the logo</span>
         </div>
         <div class="fg" style="margin-bottom:18px">
@@ -293,11 +293,11 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
 
       <div class="form-card">
         <h3>Custom AI Persona</h3>
-        <p class="desc">Add extra instructions to Nova's personality. These are appended to the base system prompt — great for domain specialization per client.</p>
+        <p class="desc">Add extra instructions to Aura's personality. These are appended to the base system prompt — great for domain specialization per client.</p>
         <div class="fg" style="margin-bottom:16px">
           <label>Extra Instructions (system prompt addon)</label>
           <textarea id="b-persona" rows="7" placeholder="Example: You are an expert chef and nutritionist. Always suggest healthy alternatives. When users ask about recipes, proactively mention allergen information. Keep a warm, encouraging tone."></textarea>
-          <span class="hint">Leave blank to use Nova's default personality. These instructions take effect immediately — no restart needed.</span>
+          <span class="hint">Leave blank to use Aura's default personality. These instructions take effect immediately — no restart needed.</span>
         </div>
         <div class="fg" style="margin-bottom:18px">
           <label>AI Temperature: <strong id="b-temp-val">0.75</strong></label>
@@ -351,7 +351,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
 
       <div class="section">
         <div class="section-hdr">
-          <div><h2>Indexed Sources</h2><p>Content Nova can reference in answers</p></div>
+          <div><h2>Indexed Sources</h2><p>Content Aura can reference in answers</p></div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-ghost btn-sm" onclick="loadSources()">↻ Refresh</button>
             <button class="btn btn-danger btn-sm" onclick="clearKB()">🗑 Clear All</button>
@@ -421,7 +421,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px;
           <div style="margin-top:18px;padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
             <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">📌 How it works</div>
             <ul style="font-size:12px;color:var(--text3);margin:0;padding-left:18px;line-height:1.8">
-              <li>The snippet loads a lightweight script from your Nova AI deployment</li>
+              <li>The snippet loads a lightweight script from your Aura AI deployment</li>
               <li>A floating button appears on your page — no iframe, no extra dependencies</li>
               <li>Clicking it opens a full chat window in a Shadow DOM overlay</li>
               <li>Conversations use your app's AI, branding, and knowledge base</li>
@@ -598,7 +598,7 @@ async function revokeKey(key) {
 async function loadBranding() {
   try {
     const d = await apiFetch('/admin/settings');
-    document.getElementById('b-name').value     = d.bot_name      || 'Nova AI';
+    document.getElementById('b-name').value     = d.bot_name      || 'Aura AI';
     document.getElementById('b-emoji').value    = d.logo_emoji    || '✦';
     document.getElementById('b-color').value    = d.primary_color || '#4F46E5';
     document.getElementById('b-greeting').value = d.greeting      || '';
@@ -632,7 +632,7 @@ async function savePersona() {
       temperature:   document.getElementById('b-temp').value,
     }),
   });
-  res.ok ? toast('Persona saved! Nova uses these instructions immediately.', 'ok') : toast('Save failed.', 'err');
+  res.ok ? toast('Persona saved! Aura uses these instructions immediately.', 'ok') : toast('Save failed.', 'err');
 }
 
 // ── Knowledge Base ────────────────────────────────────────────────────────────
@@ -768,7 +768,7 @@ function updateEmbed() {
   const greetAttr  = greeting ? `\n  data-greeting="${greeting.replace(/"/g, '&quot;')}"` : '';
   const botnameAttr = botname ? `\n  data-botname="${botname.replace(/"/g, '&quot;')}"` : '';
 
-  const code = `<!-- Nova AI Chat Widget -->
+  const code = `<!-- Aura AI Chat Widget -->
 <script>
 (function(){
   var s=document.createElement('script');
@@ -781,7 +781,7 @@ function updateEmbed() {
   document.head.appendChild(s);
 })();
 <\/script>
-<!-- End Nova AI Widget -->`;
+<!-- End Aura AI Widget -->`;
 
   const ta = document.getElementById('w-embed-code');
   if (ta) ta.value = code;

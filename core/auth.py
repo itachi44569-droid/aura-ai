@@ -11,11 +11,11 @@ from datetime import datetime
 DB = os.getenv("DB_PATH", "brain.db")
 
 DEFAULT_SETTINGS = {
-    "bot_name":      "Nova AI",
+    "bot_name":      "Aura AI",
     "logo_emoji":    "✦",
     "primary_color": "#4F46E5",
     "greeting": (
-        "Hey! I'm Nova. I can search the web, check live prices, "
+        "Hey! I'm Aura. I can search the web, check live prices, "
         "summarize YouTube videos, get news, do math, and a lot more. What do you need?"
     ),
     "persona_addon": "",
