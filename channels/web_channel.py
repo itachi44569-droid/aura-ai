@@ -33,7 +33,7 @@ from collections import defaultdict
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException, WebSocket, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
