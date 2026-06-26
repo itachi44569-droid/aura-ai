@@ -1,6 +1,6 @@
 /**
- * Nova AI Chat Widget
- * Drop-in script for embedding Nova on any website.
+ * Aura AI Chat Widget
+ * Drop-in script for embedding Aura on any website.
  * Reads config from the <script> tag's data-* attributes.
  */
 (function () {
@@ -83,7 +83,7 @@
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.src = buildIframeSrc();
-      iframe.title = cfg.botname || 'Nova AI Chat';
+      iframe.title = cfg.botname || 'Aura AI Chat';
       iframe.allow = 'microphone; clipboard-write';
       panel.appendChild(iframe);
     }
