@@ -10,17 +10,26 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', Arial, sans-serif; color: #111; background: #fff; line-height: 1.6; }
   a { text-decoration: none; }
+  img { display: block; }
   .banner { background: #111; color: #fff; text-align: center; padding: 10px 16px; font-size: 12.5px; letter-spacing: .5px; }
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 30px 44px; max-width: 1120px; margin: 0 auto; }
-  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: 3px; }
-  nav .links { display: flex; gap: 34px; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #444; }
 
-  header.hero { padding: 90px 20px 110px; text-align: center; border-bottom: 1px solid #eee; }
-  header.hero .eyebrow { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #999; margin-bottom: 26px; }
-  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 60px; line-height: 1.05; letter-spacing: -1px; margin-bottom: 22px; }
-  header.hero p.sub { font-size: 14.5px; color: #666; max-width: 420px; margin: 0 auto; letter-spacing: .2px; }
-  header.hero .cta { margin-top: 36px; }
-  header.hero .cta a { display: inline-block; background: #111; color: #fff; font-weight: 600; padding: 15px 36px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  nav {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 30px 44px; max-width: 1160px; margin: 0 auto;
+  }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: 3px; color: #fff; }
+  nav .links { display: flex; gap: 34px; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #eee; }
+
+  header.hero { position: relative; height: 82vh; min-height: 560px; display: flex; align-items: flex-end; }
+  header.hero .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  header.hero .overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.55) 60%, #fff 100%); }
+  header.hero .content { position: relative; z-index: 2; padding: 0 44px 70px; text-align: center; width: 100%; }
+  header.hero .eyebrow { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #e8dcc4; margin-bottom: 22px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 58px; line-height: 1.05; letter-spacing: -1px; color: #fff; margin-bottom: 20px; }
+  header.hero p.sub { font-size: 14.5px; color: #f1ece2; max-width: 420px; margin: 0 auto; letter-spacing: .2px; }
+  header.hero .cta { margin-top: 32px; }
+  header.hero .cta a { display: inline-block; background: #fff; color: #111; font-weight: 600; padding: 15px 36px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
 
   main { max-width: 1000px; margin: 0 auto; padding: 80px 20px 60px; }
 
@@ -33,7 +42,9 @@
   section h2 { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 500; margin-bottom: 8px; }
   section .desc { font-size: 13.5px; color: #777; margin-bottom: 30px; max-width: 520px; }
 
-  .about p { font-size: 14.5px; color: #444; max-width: 640px; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .about-grid p { font-size: 14.5px; color: #444; }
+  .about-grid img { width: 100%; height: 280px; object-fit: cover; }
 
   .hours-box { max-width: 380px; }
   .hours-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 12px 0; border-bottom: 1px solid #eee; }
@@ -41,10 +52,11 @@
   .hours-row span:last-child { font-weight: 600; }
 
   .collection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #eee; }
-  .piece { background: #fafafa; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-  .piece .swatch { width: 44px; height: 44px; border-radius: 50%; margin-bottom: 16px; }
+  .piece { background: #fafafa; }
+  .piece img { width: 100%; aspect-ratio: 3/4; object-fit: cover; }
+  .piece .body { padding: 16px 18px; }
   .piece .name { font-size: 13px; font-weight: 600; letter-spacing: .3px; }
-  .piece .price { font-family: 'Fraunces', serif; font-size: 14px; color: #555; margin-top: 6px; }
+  .piece .price { font-family: 'Fraunces', serif; font-size: 14px; color: #555; margin-top: 4px; }
 
   .ask-box { background: #111; color: #fff; padding: 54px 34px; text-align: center; }
   .ask-box .kicker { color: #999; }
@@ -55,22 +67,33 @@
   .chips .arrow { align-self: center; color: #555; font-size: 13px; }
 
   footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #999; border-top: 1px solid #eee; }
-  @media (max-width: 640px) { .collection-grid { grid-template-columns: repeat(2, 1fr); } header.hero h1 { font-size: 38px; } nav .links { display: none; } .strip { flex-direction: column; } }
+  footer .credit { margin-top: 6px; color: #111; font-weight: 600; }
+
+  @media (max-width: 720px) {
+    .collection-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-grid { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 38px; }
+    nav .links { display: none; }
+    .strip { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
   <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
 
-  <nav>
-    <div class="logo">MAISON NOIR</div>
-    <div class="links"><a href="#about">About</a><a href="#hours">Visit</a><a href="#collection">Collection</a></div>
-  </nav>
-
   <header class="hero">
-    <div class="eyebrow">Asansol · Contemporary Womenswear</div>
-    <h1>Wear what<br>lasts.</h1>
-    <p class="sub">Considered pieces, made to be worn for years — not seasons.</p>
-    <div class="cta"><a href="#collection">Shop the Edit</a></div>
+    <img class="bg" src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600&q=80&auto=format" alt="">
+    <div class="overlay"></div>
+    <nav>
+      <div class="logo">MAISON NOIR</div>
+      <div class="links"><a href="#about">About</a><a href="#hours">Visit</a><a href="#collection">Collection</a></div>
+    </nav>
+    <div class="content">
+      <div class="eyebrow">Asansol · Contemporary Womenswear</div>
+      <h1>Wear what<br>lasts.</h1>
+      <p class="sub">Considered pieces, made to be worn for years — not seasons.</p>
+      <div class="cta"><a href="#collection">Shop the Edit</a></div>
+    </div>
   </header>
 
   <main>
@@ -84,8 +107,11 @@
       <div class="kicker">Our Story</div>
       <h2>About the Studio</h2>
       <p class="desc">Slow fashion, made in small batches.</p>
-      <p>MAISON NOIR designs contemporary womenswear for Asansol's modern woman — clean lines,
-      quality fabric, and pieces built to outlast trends. Every collection is limited by design.</p>
+      <div class="about-grid">
+        <p>MAISON NOIR designs contemporary womenswear for Asansol's modern woman — clean lines,
+        quality fabric, and pieces built to outlast trends. Every collection is limited by design.</p>
+        <img src="https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=700&q=80&auto=format" alt="Boutique interior">
+      </div>
     </section>
 
     <section id="hours">
@@ -102,9 +128,18 @@
       <div class="kicker">Now Showing</div>
       <h2>The Collection</h2>
       <div class="collection-grid">
-        <div class="piece"><div class="swatch" style="background:#1c1c1c"></div><div class="name">Tailored Blazer</div><div class="price">₹3,200</div></div>
-        <div class="piece"><div class="swatch" style="background:#c9beac"></div><div class="name">Linen Wrap Dress</div><div class="price">₹2,600</div></div>
-        <div class="piece"><div class="swatch" style="background:#7a6a58"></div><div class="name">Silk Column Skirt</div><div class="price">₹2,100</div></div>
+        <div class="piece">
+          <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80&auto=format" alt="Tailored Blazer">
+          <div class="body"><div class="name">Tailored Blazer</div><div class="price">₹3,200</div></div>
+        </div>
+        <div class="piece">
+          <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&q=80&auto=format" alt="Linen Wrap Dress">
+          <div class="body"><div class="name">Linen Wrap Dress</div><div class="price">₹2,600</div></div>
+        </div>
+        <div class="piece">
+          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&q=80&auto=format" alt="Silk Column Skirt">
+          <div class="body"><div class="name">Silk Column Skirt</div><div class="price">₹2,100</div></div>
+        </div>
       </div>
     </section>
 
@@ -124,7 +159,10 @@
     </section>
   </main>
 
-  <footer>Demo storefront built to showcase the AI chatbot widget. Not a real business.</footer>
+  <footer>
+    Demo storefront built to showcase the AI chatbot widget. Not a real business.
+    <div class="credit">Website + AI Chatbot design available — ask about getting one for your business.</div>
+  </footer>
 
   <script src="/static/biz-widget.js"
           data-api="https://ai-brain-production-7286.up.railway.app"

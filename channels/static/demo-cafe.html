@@ -8,49 +8,69 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', Arial, sans-serif; color: #f2e9db; background: #241a12; line-height: 1.65; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', Arial, sans-serif; color: #f2e9db; background: #1a130d; line-height: 1.65; }
   a { text-decoration: none; }
+  img { display: block; }
+
   .banner { background: #e2a83f; color: #241a12; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 26px 44px; max-width: 1120px; margin: 0 auto; }
-  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; color: #f7ecd9; }
-  nav .links { display: flex; gap: 32px; font-size: 13px; color: #c7ad8f; }
+
+  nav {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 44px; max-width: 1160px; margin: 0 auto;
+  }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; color: #fff; }
+  nav .links { display: flex; gap: 32px; font-size: 13px; color: #f2e9db; }
 
   header.hero {
-    background: radial-gradient(ellipse at 50% -10%, rgba(226,168,63,.18), transparent 60%), #241a12;
-    padding: 70px 20px 100px; text-align: center; border-bottom: 1px solid rgba(226,168,63,.18);
+    position: relative; height: 78vh; min-height: 520px; display: flex; align-items: flex-end;
+    background: #1a130d;
   }
-  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #e2a83f; margin-bottom: 22px; }
-  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 50px; line-height: 1.15; color: #faf3e7; margin-bottom: 18px; }
+  header.hero .bg {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  header.hero .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(20,14,8,.35) 0%, rgba(20,14,8,.55) 55%, #1a130d 100%);
+  }
+  header.hero .content { position: relative; z-index: 2; max-width: 640px; padding: 0 44px 64px; }
+  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #e2a83f; margin-bottom: 18px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 54px; line-height: 1.12; color: #fff; margin-bottom: 16px; }
   header.hero h1 em { font-style: italic; color: #e2a83f; }
-  header.hero p.sub { font-size: 15.5px; color: #c7ad8f; max-width: 460px; margin: 0 auto; }
-  header.hero .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; }
+  header.hero p.sub { font-size: 15.5px; color: #e6dcc9; max-width: 420px; }
+  header.hero .cta { margin-top: 30px; display: flex; gap: 14px; }
   header.hero .cta a.primary { background: #e2a83f; color: #241a12; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
-  header.hero .cta a.ghost { border: 1px solid rgba(226,168,63,.4); color: #f2e9db; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
+  header.hero .cta a.ghost { border: 1px solid rgba(255,255,255,.5); color: #fff; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
 
   main { max-width: 1000px; margin: 0 auto; padding: 70px 20px 60px; }
   .divider { width: 40px; height: 2px; background: #e2a83f; margin-bottom: 20px; }
 
-  .strip { display: flex; justify-content: space-around; text-align: center; padding: 30px 0 60px; border-bottom: 1px solid rgba(226,168,63,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 0 0 60px; border-bottom: 1px solid rgba(226,168,63,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
   .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #e2a83f; font-weight: 600; }
   .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #9c8770; text-transform: uppercase; }
 
   section { margin-bottom: 66px; }
   section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #f7ecd9; margin-bottom: 6px; }
   section .desc { font-size: 14px; color: #ab9578; margin-bottom: 26px; max-width: 560px; }
-  .about p { font-size: 15px; color: #d8c6ab; max-width: 680px; }
+
+  .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; }
+  .about-grid p { font-size: 15px; color: #d8c6ab; }
+  .about-grid img { width: 100%; height: 260px; object-fit: cover; border-radius: 8px; }
 
   .hours-box { background: rgba(255,255,255,.03); border: 1px solid rgba(226,168,63,.14); border-radius: 4px; padding: 26px 30px; max-width: 420px; }
   .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #dcc9ac; }
   .hours-row:last-child { border-bottom: none; }
   .hours-row span:last-child { font-weight: 600; color: #e2a83f; }
 
-  .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(226,168,63,.14); border: 1px solid rgba(226,168,63,.14); }
-  .item { background: #2a1f16; padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; }
-  .item .name { font-size: 14.5px; font-weight: 600; color: #f7ecd9; }
-  .item .name small { display: block; font-weight: 400; color: #9c8770; font-size: 12px; margin-top: 3px; }
-  .item .price { font-family: 'Fraunces', serif; font-weight: 600; color: #e2a83f; font-size: 16px; white-space: nowrap; }
+  .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .item { background: #241a12; border-radius: 10px; overflow: hidden; border: 1px solid rgba(226,168,63,.1); }
+  .item img { width: 100%; height: 120px; object-fit: cover; }
+  .item .body { padding: 14px 16px; }
+  .item .name { font-size: 13.5px; font-weight: 600; color: #f7ecd9; }
+  .item .price { font-family: 'Fraunces', serif; font-weight: 600; color: #e2a83f; font-size: 14px; margin-top: 4px; }
 
-  .ask-box { background: linear-gradient(135deg, #2e2115, #241a12); border: 1px solid rgba(226,168,63,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
+  .ask-box { background: linear-gradient(135deg, #2e2115, #1a130d); border: 1px solid rgba(226,168,63,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
   .ask-box h2 { color: #f7ecd9; }
   .ask-box .desc { margin: 0 auto 22px; }
   .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
@@ -58,22 +78,33 @@
   .chips .arrow { align-self: center; color: #6b5c47; font-size: 13px; }
 
   footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #6b5c47; border-top: 1px solid rgba(226,168,63,.1); }
-  @media (max-width: 640px) { .menu-grid { grid-template-columns: 1fr; } header.hero h1 { font-size: 34px; } nav .links { display: none; } .strip { flex-direction: column; } }
+  footer .credit { margin-top: 6px; color: #e2a83f; font-weight: 600; }
+
+  @media (max-width: 720px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-grid { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 34px; }
+    nav .links { display: none; }
+    .strip { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
   <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
 
-  <nav>
-    <div class="logo">COPPER &amp; BEAN</div>
-    <div class="links"><a href="#about">About</a><a href="#hours">Hours</a><a href="#menu">Menu</a></div>
-  </nav>
-
   <header class="hero">
-    <div class="eyebrow">Asansol · Roasted Daily</div>
-    <h1>Coffee worth<br>the <em>detour.</em></h1>
-    <p class="sub">Small-batch roasts, all-day brunch, and a corner booth that's always warm.</p>
-    <div class="cta"><a class="primary" href="#menu">View Menu</a><a class="ghost" href="#hours">Reserve a Table</a></div>
+    <img class="bg" src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1600&q=80&auto=format" alt="">
+    <div class="overlay"></div>
+    <nav>
+      <div class="logo">COPPER &amp; BEAN</div>
+      <div class="links"><a href="#about">About</a><a href="#hours">Hours</a><a href="#menu">Menu</a></div>
+    </nav>
+    <div class="content">
+      <div class="eyebrow">Asansol · Roasted Daily</div>
+      <h1>Coffee worth<br>the <em>detour.</em></h1>
+      <p class="sub">Small-batch roasts, all-day brunch, and a corner booth that's always warm.</p>
+      <div class="cta"><a class="primary" href="#menu">View Menu</a><a class="ghost" href="#hours">Reserve a Table</a></div>
+    </div>
   </header>
 
   <main>
@@ -87,8 +118,12 @@
       <div class="divider"></div>
       <h2>About Us</h2>
       <p class="desc">A neighborhood café built around good coffee and slow mornings.</p>
-      <p>Copper &amp; Bean has been Asansol's go-to spot for specialty coffee, all-day brunch, and
-      fresh-baked pastries since 2019. Every bean is roasted in-house, every dish made to order.</p>
+      <div class="about-grid">
+        <p>Copper &amp; Bean has been Asansol's go-to spot for specialty coffee, all-day brunch, and
+        fresh-baked pastries since 2019. Every bean is roasted in-house, every dish made to order —
+        come for the coffee, stay for the mood.</p>
+        <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=700&q=80&auto=format" alt="Cafe interior">
+      </div>
     </section>
 
     <section id="hours">
@@ -104,10 +139,22 @@
       <div class="divider"></div>
       <h2>Popular Picks</h2>
       <div class="menu-grid">
-        <div class="item"><span class="name">Signature Cold Brew<small>House cold-steeped, 18hr</small></span><span class="price">₹180</span></div>
-        <div class="item"><span class="name">Avocado Toast<small>Sourdough, chili flake, lime</small></span><span class="price">₹280</span></div>
-        <div class="item"><span class="name">Classic Cappuccino<small>Double shot, silky foam</small></span><span class="price">₹150</span></div>
-        <div class="item"><span class="name">Belgian Waffle Stack<small>Maple, seasonal fruit</small></span><span class="price">₹320</span></div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80&auto=format" alt="Cold brew">
+          <div class="body"><div class="name">Signature Cold Brew</div><div class="price">₹180</div></div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=500&q=80&auto=format" alt="Avocado toast">
+          <div class="body"><div class="name">Avocado Toast</div><div class="price">₹280</div></div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80&auto=format" alt="Pastry">
+          <div class="body"><div class="name">Classic Cappuccino</div><div class="price">₹150</div></div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&q=80&auto=format" alt="Cake">
+          <div class="body"><div class="name">Belgian Waffle Stack</div><div class="price">₹320</div></div>
+        </div>
       </div>
     </section>
 
@@ -127,7 +174,10 @@
     </section>
   </main>
 
-  <footer>Demo storefront built to showcase the AI chatbot widget. Not a real business.</footer>
+  <footer>
+    Demo storefront built to showcase the AI chatbot widget. Not a real business.
+    <div class="credit">Website + AI Chatbot design available — ask about getting one for your business.</div>
+  </footer>
 
   <script src="/static/biz-widget.js"
           data-api="https://ai-brain-production-7286.up.railway.app"

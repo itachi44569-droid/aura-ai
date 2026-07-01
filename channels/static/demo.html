@@ -11,43 +11,40 @@
   html { scroll-behavior: smooth; }
   body { font-family: 'Inter', Arial, sans-serif; color: #e9e3d8; background: #100e0c; line-height: 1.65; }
   a { text-decoration: none; }
+  img { display: block; }
 
   .banner { background: #d4af6a; color: #100e0c; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
 
   nav {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 26px 44px; max-width: 1120px; margin: 0 auto;
+    padding: 26px 44px; max-width: 1160px; margin: 0 auto;
   }
-  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: .5px; color: #f3ead9; }
-  nav .links { display: flex; gap: 32px; font-size: 13px; letter-spacing: .3px; color: #b8ac97; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: .5px; color: #fff; }
+  nav .links { display: flex; gap: 32px; font-size: 13px; letter-spacing: .3px; color: #f3ead9; }
 
   header.hero {
-    background: radial-gradient(ellipse at 50% -10%, rgba(212,175,106,.16), transparent 60%), #100e0c;
-    padding: 70px 20px 110px; text-align: center; position: relative;
-    border-bottom: 1px solid rgba(212,175,106,.18);
+    position: relative; height: 80vh; min-height: 540px; display: flex; align-items: flex-end;
+    background: #100e0c;
   }
-  header.hero .eyebrow {
-    font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #d4af6a; margin-bottom: 22px;
+  header.hero .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  header.hero .overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(16,14,12,.3) 0%, rgba(16,14,12,.55) 55%, #100e0c 100%);
   }
-  header.hero h1 {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 52px; line-height: 1.12;
-    color: #f8f3e9; margin-bottom: 18px;
-  }
+  header.hero .content { position: relative; z-index: 2; max-width: 640px; padding: 0 44px 64px; }
+  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #d4af6a; margin-bottom: 22px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 54px; line-height: 1.12; color: #f8f3e9; margin-bottom: 18px; }
   header.hero h1 em { font-style: italic; color: #d4af6a; }
-  header.hero p.sub { font-size: 15.5px; color: #a89e8d; max-width: 440px; margin: 0 auto; }
-  header.hero .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; }
-  header.hero .cta a.primary {
-    background: #d4af6a; color: #100e0c; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px;
-  }
-  header.hero .cta a.ghost {
-    border: 1px solid rgba(212,175,106,.4); color: #e9e3d8; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px;
-  }
+  header.hero p.sub { font-size: 15.5px; color: #d6cbb8; max-width: 440px; }
+  header.hero .cta { margin-top: 30px; display: flex; gap: 14px; }
+  header.hero .cta a.primary { background: #d4af6a; color: #100e0c; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px; }
+  header.hero .cta a.ghost { border: 1px solid rgba(255,255,255,.45); color: #fff; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px; }
 
   main { max-width: 1000px; margin: 0 auto; padding: 70px 20px 60px; }
-
   .divider { width: 40px; height: 2px; background: #d4af6a; margin-bottom: 20px; }
 
-  .strip { display: flex; justify-content: space-around; text-align: center; padding: 30px 0 60px; border-bottom: 1px solid rgba(212,175,106,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 0 0 60px; border-bottom: 1px solid rgba(212,175,106,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
   .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #d4af6a; font-weight: 600; }
   .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #8a7f6c; text-transform: uppercase; }
 
@@ -55,18 +52,21 @@
   section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #f3ead9; margin-bottom: 6px; }
   section .desc { font-size: 14px; color: #9c9282; margin-bottom: 26px; max-width: 560px; }
 
-  .about p { font-size: 15px; color: #b8ac97; max-width: 680px; }
+  .about-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; align-items: center; }
+  .about-grid p { font-size: 15px; color: #b8ac97; }
+  .about-grid img { width: 100%; height: 260px; object-fit: cover; border-radius: 8px; }
 
   .hours-box { background: rgba(255,255,255,.03); border: 1px solid rgba(212,175,106,.14); border-radius: 4px; padding: 26px 30px; max-width: 420px; }
   .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #cfc6b6; }
   .hours-row:last-child { border-bottom: none; }
   .hours-row span:last-child { font-weight: 600; color: #d4af6a; }
 
-  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(212,175,106,.14); border: 1px solid rgba(212,175,106,.14); }
-  .service { background: #14110d; padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; }
-  .service .name { font-size: 14.5px; font-weight: 600; color: #f3ead9; }
-  .service .name small { display: block; font-weight: 400; color: #8a7f6c; font-size: 12px; margin-top: 3px; }
-  .service .price { font-family: 'Fraunces', serif; font-weight: 600; color: #d4af6a; font-size: 16px; white-space: nowrap; }
+  .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .service { background: #17130f; border-radius: 10px; overflow: hidden; border: 1px solid rgba(212,175,106,.12); }
+  .service img { width: 100%; height: 120px; object-fit: cover; }
+  .service .body { padding: 14px 16px; }
+  .service .name { font-size: 13.5px; font-weight: 600; color: #f3ead9; }
+  .service .price { font-family: 'Fraunces', serif; font-weight: 600; color: #d4af6a; font-size: 14px; margin-top: 4px; }
 
   .ask-box { background: linear-gradient(135deg, #1a1512, #100e0c); border: 1px solid rgba(212,175,106,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
   .ask-box h2 { color: #f3ead9; }
@@ -76,9 +76,11 @@
   .chips .arrow { align-self: center; color: #6b6152; font-size: 13px; }
 
   footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #665e50; border-top: 1px solid rgba(212,175,106,.1); }
+  footer .credit { margin-top: 6px; color: #d4af6a; font-weight: 600; }
 
-  @media (max-width: 640px) {
-    .services-grid { grid-template-columns: 1fr; }
+  @media (max-width: 720px) {
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-grid { grid-template-columns: 1fr; }
     header.hero h1 { font-size: 36px; }
     nav .links { display: none; }
     .strip { flex-direction: column; }
@@ -88,22 +90,18 @@
 <body>
   <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
 
-  <nav>
-    <div class="logo">BELLA</div>
-    <div class="links">
-      <a href="#about">About</a>
-      <a href="#hours">Hours</a>
-      <a href="#services">Services</a>
-    </div>
-  </nav>
-
   <header class="hero">
-    <div class="eyebrow">Asansol · Since 2018</div>
-    <h1>Beauty, treated<br>as an <em>art form.</em></h1>
-    <p class="sub">Hair, skin &amp; bridal artistry for those who don't settle for ordinary.</p>
-    <div class="cta">
-      <a class="primary" href="#services">View Services</a>
-      <a class="ghost" href="#hours">Book a Visit</a>
+    <img class="bg" src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&q=80&auto=format" alt="">
+    <div class="overlay"></div>
+    <nav>
+      <div class="logo">BELLA</div>
+      <div class="links"><a href="#about">About</a><a href="#hours">Hours</a><a href="#services">Services</a></div>
+    </nav>
+    <div class="content">
+      <div class="eyebrow">Asansol · Since 2018</div>
+      <h1>Beauty, treated<br>as an <em>art form.</em></h1>
+      <p class="sub">Hair, skin &amp; bridal artistry for those who don't settle for ordinary.</p>
+      <div class="cta"><a class="primary" href="#services">View Services</a><a class="ghost" href="#hours">Book a Visit</a></div>
     </div>
   </header>
 
@@ -118,9 +116,12 @@
       <div class="divider"></div>
       <h2>About Us</h2>
       <p class="desc">A quiet luxury studio in the heart of Asansol.</p>
-      <p>Bella Salon has served Asansol for 8 years with expert hair styling, skincare treatments,
-      and bridal makeup packages. Every technique is refined, every product premium — because how
-      you feel matters as much as how you look.</p>
+      <div class="about-grid">
+        <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&q=80&auto=format" alt="Salon interior">
+        <p>Bella Salon has served Asansol for 8 years with expert hair styling, skincare treatments,
+        and bridal makeup packages. Every technique is refined, every product premium — because how
+        you feel matters as much as how you look.</p>
+      </div>
     </section>
 
     <section id="hours">
@@ -137,10 +138,22 @@
       <div class="divider"></div>
       <h2>Signature Services</h2>
       <div class="services-grid">
-        <div class="service"><span class="name">Haircut &amp; Styling<small>All hair types</small></span><span class="price">₹300+</span></div>
-        <div class="service"><span class="name">Bridal Makeup Package<small>Full day coverage</small></span><span class="price">₹8,000+</span></div>
-        <div class="service"><span class="name">Facial &amp; Skincare<small>Deep cleanse &amp; glow</small></span><span class="price">₹800+</span></div>
-        <div class="service"><span class="name">Hair Spa &amp; Treatment<small>Repair &amp; nourish</small></span><span class="price">₹1,200+</span></div>
+        <div class="service">
+          <img src="https://images.unsplash.com/photo-1522336572468-97b06e8ef143?w=500&q=80&auto=format" alt="Haircut">
+          <div class="body"><div class="name">Haircut &amp; Styling</div><div class="price">₹300+</div></div>
+        </div>
+        <div class="service">
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=500&q=80&auto=format" alt="Bridal makeup">
+          <div class="body"><div class="name">Bridal Makeup Package</div><div class="price">₹8,000+</div></div>
+        </div>
+        <div class="service">
+          <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&q=80&auto=format" alt="Facial">
+          <div class="body"><div class="name">Facial &amp; Skincare</div><div class="price">₹800+</div></div>
+        </div>
+        <div class="service">
+          <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=500&q=80&auto=format" alt="Hair spa">
+          <div class="body"><div class="name">Hair Spa &amp; Treatment</div><div class="price">₹1,200+</div></div>
+        </div>
       </div>
     </section>
 
@@ -160,7 +173,10 @@
     </section>
   </main>
 
-  <footer>Demo storefront built to showcase the AI chatbot widget. Not a real business.</footer>
+  <footer>
+    Demo storefront built to showcase the AI chatbot widget. Not a real business.
+    <div class="credit">Website + AI Chatbot design available — ask about getting one for your business.</div>
+  </footer>
 
   <script src="/static/biz-widget.js"
           data-api="https://ai-brain-production-7286.up.railway.app"
