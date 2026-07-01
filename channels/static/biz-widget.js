@@ -10,6 +10,10 @@
           data-greeting="Hi! Ask me about our services, hours, or prices."
           data-persona="You are the assistant for Bella Salon, a hair & beauty salon in Asansol. Hours: 10am-8pm, closed Mondays. Be warm and concise."
   ></script>
+
+  Rendered inside a Shadow DOM so the host page's CSS can never leak in
+  (fixes invisible text / broken cursor issues on sites with aggressive
+  global styles).
 */
 (function () {
   var scriptTag = document.currentScript;
@@ -27,56 +31,69 @@
     localStorage.setItem(STORAGE_KEY, userId);
   }
 
+  var host = document.createElement("div");
+  host.id = "aura-biz-widget-host";
+  document.body.appendChild(host);
+  var root = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
+
   var css = "" +
+    ":host{all:initial;}" +
+    "*{box-sizing:border-box;-webkit-user-select:auto;user-select:auto;}" +
     "#aura-bubble{position:fixed;bottom:22px;right:22px;width:60px;height:60px;border-radius:50%;" +
-    "background:" + COLOR + ";box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;z-index:999999;" +
-    "display:flex;align-items:center;justify-content:center;transition:transform .15s ease;}" +
+    "background:" + COLOR + ";box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;z-index:2147483000;" +
+    "display:flex;align-items:center;justify-content:center;transition:transform .15s ease;border:none;}" +
     "#aura-bubble:hover{transform:scale(1.06);}" +
-    "#aura-bubble svg{width:28px;height:28px;fill:#fff;}" +
+    "#aura-bubble svg{width:28px;height:28px;fill:#fff;pointer-events:none;}" +
     "#aura-win{position:fixed;bottom:96px;right:22px;width:340px;max-width:90vw;height:460px;max-height:70vh;" +
-    "background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.25);display:none;flex-direction:column;" +
-    "overflow:hidden;z-index:999999;font-family:Arial,Helvetica,sans-serif;}" +
+    "background:#ffffff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.25);display:none;flex-direction:column;" +
+    "overflow:hidden;z-index:2147483000;font-family:Arial,Helvetica,sans-serif;color:#1F2937;}" +
     "#aura-win.open{display:flex;}" +
     "#aura-hdr{background:" + COLOR + ";color:#fff;padding:14px 16px;font-weight:600;font-size:15px;" +
-    "display:flex;align-items:center;justify-content:space-between;}" +
-    "#aura-hdr span.sub{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px;}" +
+    "display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}" +
+    "#aura-hdr .title{color:#fff;}" +
+    "#aura-hdr span.sub{display:block;font-weight:400;font-size:11px;opacity:.85;margin-top:2px;color:#fff;}" +
     "#aura-close{cursor:pointer;font-size:20px;line-height:1;background:none;border:none;color:#fff;padding:0 4px;}" +
     "#aura-msgs{flex:1;overflow-y:auto;padding:14px;background:#F7F8FA;display:flex;flex-direction:column;gap:10px;}" +
-    ".aura-row{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13.5px;line-height:1.45;word-wrap:break-word;}" +
-    ".aura-bot{background:#fff;border:1px solid #E5E7EB;align-self:flex-start;color:#1F2937;}" +
+    ".aura-row{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13.5px;line-height:1.45;word-wrap:break-word;" +
+    "-webkit-user-select:text;user-select:text;font-family:Arial,Helvetica,sans-serif;}" +
+    ".aura-bot{background:#ffffff;border:1px solid #E5E7EB;align-self:flex-start;color:#1F2937;}" +
     ".aura-user{background:" + COLOR + ";color:#fff;align-self:flex-end;}" +
     ".aura-typing{align-self:flex-start;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:9px 13px;}" +
     ".aura-typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9CA3AF;margin:0 2px;" +
     "animation:aura-blink 1.2s infinite;}" +
     ".aura-typing span:nth-child(2){animation-delay:.2s;} .aura-typing span:nth-child(3){animation-delay:.4s;}" +
     "@keyframes aura-blink{0%,80%,100%{opacity:.3;}40%{opacity:1;}}" +
-    "#aura-inputrow{display:flex;border-top:1px solid #E5E7EB;padding:8px;gap:8px;background:#fff;}" +
-    "#aura-input{flex:1;border:1px solid #E5E7EB;border-radius:20px;padding:9px 14px;font-size:13.5px;outline:none;}" +
+    "#aura-inputrow{display:flex;border-top:1px solid #E5E7EB;padding:8px;gap:8px;background:#ffffff;flex-shrink:0;}" +
+    "#aura-input{flex:1;border:1px solid #E5E7EB;border-radius:20px;padding:9px 14px;font-size:13.5px;outline:none;" +
+    "background:#ffffff;color:#1F2937;font-family:Arial,Helvetica,sans-serif;-webkit-user-select:text;user-select:text;" +
+    "cursor:text;caret-color:#1F2937;}" +
+    "#aura-input::placeholder{color:#9CA3AF;opacity:1;}" +
     "#aura-send{background:" + COLOR + ";border:none;color:#fff;border-radius:20px;padding:0 16px;font-size:13px;" +
-    "font-weight:600;cursor:pointer;}" +
-    "#aura-send:disabled{opacity:.5;cursor:default;}" +
-    "#aura-badge{position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:#EF4444;" +
-    "border:2px solid #fff;}";
+    "font-weight:600;cursor:pointer;flex-shrink:0;}" +
+    "#aura-send:disabled{opacity:.5;cursor:default;}";
+
   var styleEl = document.createElement("style");
   styleEl.textContent = css;
-  document.head.appendChild(styleEl);
+  root.appendChild(styleEl);
 
-  var bubble = document.createElement("div");
+  var bubble = document.createElement("button");
   bubble.id = "aura-bubble";
+  bubble.type = "button";
+  bubble.setAttribute("aria-label", "Open chat");
   bubble.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>';
-  document.body.appendChild(bubble);
+  root.appendChild(bubble);
 
   var win = document.createElement("div");
   win.id = "aura-win";
   win.innerHTML =
-    '<div id="aura-hdr"><div>' + BOT_NAME + '<span class="sub">Usually replies instantly</span></div>' +
-    '<button id="aura-close">✕</button></div>' +
+    '<div id="aura-hdr"><div class="title">' + BOT_NAME + '<span class="sub">Usually replies instantly</span></div>' +
+    '<button id="aura-close" type="button" aria-label="Close chat">&#10005;</button></div>' +
     '<div id="aura-msgs"></div>' +
     '<div id="aura-inputrow">' +
-    '<input id="aura-input" type="text" placeholder="Type a message..." />' +
-    '<button id="aura-send">Send</button>' +
+    '<input id="aura-input" type="text" placeholder="Type a message..." autocomplete="off" />' +
+    '<button id="aura-send" type="button">Send</button>' +
     "</div>";
-  document.body.appendChild(win);
+  root.appendChild(win);
 
   var msgsEl  = win.querySelector("#aura-msgs");
   var inputEl = win.querySelector("#aura-input");
@@ -102,7 +119,7 @@
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
   function hideTyping() {
-    var t = document.getElementById("aura-typing-el");
+    var t = root.getElementById ? root.getElementById("aura-typing-el") : root.querySelector("#aura-typing-el");
     if (t) t.remove();
   }
 
