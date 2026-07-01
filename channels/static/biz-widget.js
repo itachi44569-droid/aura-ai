@@ -10,11 +10,13 @@
           data-greeting="Hi! Ask me about our services, hours, or prices."
           data-persona="You are the assistant for Bella Salon, a hair & beauty salon in Asansol. Hours: 10am-8pm, closed Mondays. Be warm and concise."
           data-suggestions="What are your hours?|What services do you offer?|Do I need an appointment?"
+          data-avatar="💇"
   ></script>
 
   Rendered inside a Shadow DOM so the host page's CSS can never leak in.
   data-suggestions is a "|"-separated list of quick-reply chips shown after
   the greeting — clicking one sends it as a message automatically.
+  data-avatar is an emoji shown in the header (defaults to a sparkle).
 */
 (function () {
   var scriptTag = document.currentScript;
@@ -24,6 +26,7 @@
   var COLOR       = scriptTag.getAttribute("data-color") || "#4F46E5";
   var GREETING    = scriptTag.getAttribute("data-greeting") || "Hi! How can I help you today?";
   var PERSONA     = scriptTag.getAttribute("data-persona") || "";
+  var AVATAR      = scriptTag.getAttribute("data-avatar") || "✨";
   var SUGGESTIONS = (scriptTag.getAttribute("data-suggestions") || "")
     .split("|").map(function (s) { return s.trim(); }).filter(Boolean);
 
@@ -142,7 +145,7 @@
   win.id = "aura-win";
   win.innerHTML =
     '<div id="aura-hdr">' +
-    '<div id="aura-avatar">✨</div>' +
+    '<div id="aura-avatar">' + AVATAR + "</div>" +
     '<div class="title"><div class="title-row"><span class="dot"></span>' + BOT_NAME + "</div>" +
     '<span class="sub">Usually replies instantly</span></div>' +
     '<button id="aura-close" type="button" aria-label="Close chat">&#10005;</button></div>' +
@@ -159,12 +162,40 @@
   var closeBtn = win.querySelector("#aura-close");
   var opened = false;
 
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // Minimal, safe markdown rendering for bot replies: images, links, bold,
+  // and line breaks. Text is HTML-escaped first so no raw tags can slip in.
+  function renderBotHtml(text) {
+    var html = escapeHtml(text);
+    html = html.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, function (m, alt, url) {
+      return '<img src="' + url + '" alt="' + alt + '" loading="lazy" ' +
+        'style="max-width:100%;border-radius:10px;margin-top:6px;display:block;">';
+    });
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function (m, label, url) {
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">' + label + "</a>";
+    });
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/\n/g, "<br>");
+    return html;
+  }
+
   function addMsg(text, who) {
     var row = document.createElement("div");
     row.className = "aura-row " + (who === "user" ? "aura-user" : "aura-bot");
-    row.textContent = text;
+    if (who === "user") {
+      row.textContent = text;
+    } else {
+      row.innerHTML = renderBotHtml(text);
+    }
     msgsEl.appendChild(row);
     msgsEl.scrollTop = msgsEl.scrollHeight;
+    var imgs = row.querySelectorAll ? row.querySelectorAll("img") : [];
+    for (var i = 0; i < imgs.length; i++) {
+      imgs[i].addEventListener("load", function () { msgsEl.scrollTop = msgsEl.scrollHeight; });
+    }
     return row;
   }
 
