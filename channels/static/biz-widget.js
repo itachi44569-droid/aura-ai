@@ -2,7 +2,7 @@
   Aura AI — Embeddable Business Chatbot Widget
   Usage (paste before </body> on the business's website):
 
-  <script src="https://YOUR-DEPLOYMENT.up.railway.app/static/widget.js"
+  <script src="https://YOUR-DEPLOYMENT.up.railway.app/static/biz-widget.js"
           data-api="https://YOUR-DEPLOYMENT.up.railway.app"
           data-client-id="business-slug"
           data-bot-name="Bella Salon Assistant"
