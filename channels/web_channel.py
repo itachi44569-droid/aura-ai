@@ -155,19 +155,13 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         version     = "1.0.0",
     )
 
-    # CORS — allow Railway domain + Vercel domain (for ISP bypass) + any custom origin
-    _railway_domain = os.getenv("RAILWAY_DOMAIN", "")
-    _vercel_url     = os.getenv("VERCEL_URL", "")
-    _extra_origins  = [o for o in [
-        f"https://{_railway_domain}" if _railway_domain else None,
-        f"http://{_railway_domain}"  if _railway_domain else None,
-        f"https://{_vercel_url}"     if _vercel_url else None,
-    ] if o]
-    _cors_origins = _extra_origins if _extra_origins else ["*"]
-
+    # CORS — the /chat endpoint is meant to be embedded on arbitrary customer
+    # websites (widget product), so it must accept any origin. It carries no
+    # cookies/credentials (client_id + user_id are passed explicitly in the
+    # request body), so a wildcard origin is safe here.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_cors_origins, allow_credentials=bool(_extra_origins),
+        allow_origins=["*"], allow_credentials=False,
         allow_methods=["*"], allow_headers=["*"],
     )
     app.add_middleware(_SecurityHeaders)
@@ -201,6 +195,8 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
         message:  str
         stream:   bool = False
         api_key:  Optional[str] = None
+        client_id: Optional[str] = None
+        business_persona: Optional[str] = None
 
     class ChatResponse(BaseModel):
         user_id:  str
@@ -314,7 +310,11 @@ def build_app(brain: Brain, rag: RAG = None) -> FastAPI:
             increment_key_usage(req.api_key)
             tier = "paid"
         try:
-            response = await brain.think(req.user_id, req.message)
+            response = await brain.think(
+                req.user_id, req.message,
+                client_id=req.client_id,
+                business_persona=req.business_persona or "",
+            )
             return ChatResponse(user_id=req.user_id, message=req.message, response=response, tier=tier)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

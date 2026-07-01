@@ -92,8 +92,16 @@ class Brain:
     # ── Public API ─────────────────────────────────────────────────────────────
 
     async def think(self, user_id: str, user_msg: str,
-                    channel: str = "telegram") -> str:
-        """Main entry point. Returns final text response."""
+                    channel: str = "telegram", client_id: str = None,
+                    business_persona: str = "") -> str:
+        """Main entry point. Returns final text response.
+
+        client_id: which business's knowledge base (RAG collection) to search.
+                   Defaults to this Brain instance's own client_id.
+        business_persona: optional per-request text (business name, hours,
+                   tone) layered into the system prompt — lets one deployment
+                   serve many businesses without redeploying.
+        """
         t0 = time.time()
 
         # Rate limit check
@@ -112,7 +120,10 @@ class Brain:
         # Route to specialist agent
         agent_type, specialist_ext = await self._router.route(user_msg)
 
-        messages = await self._build_messages(user_id, user_msg, specialist_ext)
+        messages = await self._build_messages(
+            user_id, user_msg, specialist_ext,
+            client_id=client_id, business_persona=business_persona,
+        )
         tool_schemas = [t.schema for t in self.tools] if self.tools else None
 
         response = await self._agent_loop(messages, tool_schemas)
@@ -275,10 +286,13 @@ class Brain:
     # ── Context building ───────────────────────────────────────────────────────
 
     async def _build_messages(self, user_id: str, user_msg: str,
-                              specialist_ext: str = "") -> list[dict]:
+                              specialist_ext: str = "", client_id: str = None,
+                              business_persona: str = "") -> list[dict]:
         facts      = self.memory.get_user_facts(user_id)
         summaries  = self.memory.get_summaries(user_id)
         summary_text = ("\n\n[PREVIOUS CONVERSATION SUMMARY]\n" + summaries[0]) if summaries else ""
+
+        effective_client_id = client_id or self.client_id
 
         # RAG search — try hybrid if available, else standard
         rag_context = ""
@@ -287,27 +301,29 @@ class Brain:
                 print("[Brain] Running hybrid RAG search...")
                 from .hybrid_rag import HybridRAG
                 hybrid = HybridRAG(self.rag)
-                docs   = await hybrid.search(user_msg, user_id=self.client_id, top_k=3)
+                docs   = await hybrid.search(user_msg, user_id=effective_client_id, top_k=3)
                 print(f"[Brain] Hybrid RAG returned {len(docs)} docs")
             except Exception as e:
                 print(f"[Brain] Hybrid RAG failed ({e}), trying standard RAG...")
-                docs = await self.rag.search(user_msg, client_id=self.client_id, top_k=3)
+                docs = await self.rag.search(user_msg, client_id=effective_client_id, top_k=3)
             if docs:
                 rag_context = "\n\n[KNOWLEDGE BASE]\n" + "\n---\n".join(docs)
 
-        system = self._build_system(facts, rag_context, summary_text, specialist_ext)
+        system = self._build_system(facts, rag_context, summary_text, specialist_ext, business_persona)
         messages = [{"role": "system", "content": system}]
         messages.extend(self.memory.get_history(user_id))
         messages.append({"role": "user", "content": user_msg})
         return messages
 
     def _build_system(self, facts: str, rag: str, summary: str,
-                      specialist_ext: str = "") -> str:
+                      specialist_ext: str = "", business_persona: str = "") -> str:
         base = self.personality.get(
             "system_prompt",
             "You are a helpful, intelligent AI assistant. Be concise and human."
         )
         parts = [base]
+        if business_persona:
+            parts.append(f"\n[BUSINESS CONTEXT]\n{business_persona}")
         if specialist_ext:
             parts.append(f"\n[SPECIALIST ROLE]\n{specialist_ext}")
         if facts:
