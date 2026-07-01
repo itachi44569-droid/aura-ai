@@ -36,14 +36,20 @@
 
   var host = document.createElement("div");
   host.id = "aura-biz-widget-host";
+  // Some template sites replace the OS cursor with a custom animated one via
+  // a global `cursor:none` rule + JS-driven pointer. `cursor` is inheritable,
+  // so it can leak onto our shadow host from the light DOM. Force it back to
+  // normal with !important, which beats any external !important rule too.
+  host.style.setProperty("cursor", "auto", "important");
   document.body.appendChild(host);
   var root = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
 
   var FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif";
 
   var css = "" +
-    ":host{all:initial;}" +
+    ":host{all:initial;cursor:auto;}" +
     "*{box-sizing:border-box;}" +
+    "#aura-win,#aura-msgs,.aura-row{cursor:auto;}" +
     "#aura-bubble{position:fixed;bottom:22px;right:22px;width:62px;height:62px;border-radius:50%;" +
     "background:linear-gradient(135deg," + COLOR + "," + COLOR + "cc);" +
     "box-shadow:0 8px 24px " + COLOR + "55,0 2px 8px rgba(0,0,0,.15);cursor:pointer;z-index:2147483000;" +
@@ -98,7 +104,7 @@
     "#aura-inputrow{display:flex;border-top:1px solid #EDEEF1;padding:10px;gap:8px;background:#ffffff;flex-shrink:0;}" +
     "#aura-input{flex:1;border:1.5px solid #E5E7EB;border-radius:22px;padding:10px 15px;font-size:13.5px;outline:none;" +
     "background:#F9FAFB;color:#1F2937;font-family:" + FONT + ";-webkit-user-select:text;user-select:text;" +
-    "cursor:text;caret-color:" + COLOR + ";transition:border-color .15s ease,background .15s ease;}" +
+    "cursor:text;caret-color:#1F2937;transition:border-color .15s ease,background .15s ease;}" +
     "#aura-input:focus{border-color:" + COLOR + "77;background:#fff;}" +
     "#aura-input::placeholder{color:#9CA3AF;opacity:1;}" +
     "#aura-send{background:linear-gradient(135deg," + COLOR + "," + COLOR + "dd);border:none;color:#fff;" +
@@ -108,7 +114,10 @@
     "#aura-send:disabled{opacity:.4;cursor:default;}" +
     "#aura-send svg{width:16px;height:16px;fill:#fff;margin-left:-1px;}" +
     "#aura-msgs::-webkit-scrollbar{width:5px;}" +
-    "#aura-msgs::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px;}";
+    "#aura-msgs::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px;}" +
+    "@media (max-width:480px){#aura-win{bottom:0;right:0;left:0;width:100%;max-width:100%;" +
+    "height:100%;max-height:100%;border-radius:0;}" +
+    "#aura-bubble{bottom:16px;right:16px;}}";
 
   var styleEl = document.createElement("style");
   styleEl.textContent = css;
@@ -257,5 +266,6 @@
   sendBtn.addEventListener("click", function () { sendMessage(); });
   inputEl.addEventListener("keydown", function (e) {
     if (e.key === "Enter") sendMessage();
+    if (e.key === "Escape") closeWidget();
   });
 })();
