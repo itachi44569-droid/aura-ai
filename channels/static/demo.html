@@ -5,115 +5,91 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bella Salon &amp; Spa — Asansol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', Arial, sans-serif; color: #2b2620; background: #fffaf4; line-height: 1.6; }
+  body { font-family: 'Inter', Arial, sans-serif; color: #e9e3d8; background: #100e0c; line-height: 1.65; }
   a { text-decoration: none; }
 
-  .banner {
-    background: #1e1b3a; color: #e9c9a0; text-align: center; padding: 10px 16px;
-    font-size: 13px; letter-spacing: .2px;
-  }
+  .banner { background: #d4af6a; color: #100e0c; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
 
   nav {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 40px; max-width: 1100px; margin: 0 auto;
+    padding: 26px 44px; max-width: 1120px; margin: 0 auto;
   }
-  .logo { font-family: 'Fraunces', serif; font-weight: 700; font-size: 22px; color: #7c3f2e; }
-  nav .links { display: flex; gap: 28px; font-size: 14px; font-weight: 500; color: #4b4238; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: .5px; color: #f3ead9; }
+  nav .links { display: flex; gap: 32px; font-size: 13px; letter-spacing: .3px; color: #b8ac97; }
 
   header.hero {
-    background: linear-gradient(160deg, #7c3f2e 0%, #b5643f 60%, #d9925f 100%);
-    color: #fff8ee; padding: 90px 20px 100px; text-align: center;
-    position: relative; overflow: hidden;
-  }
-  header.hero::after {
-    content: ""; position: absolute; inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.12), transparent 55%);
+    background: radial-gradient(ellipse at 50% -10%, rgba(212,175,106,.16), transparent 60%), #100e0c;
+    padding: 70px 20px 110px; text-align: center; position: relative;
+    border-bottom: 1px solid rgba(212,175,106,.18);
   }
   header.hero .eyebrow {
-    font-size: 12.5px; letter-spacing: 3px; text-transform: uppercase;
-    opacity: .85; margin-bottom: 18px; position: relative;
+    font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #d4af6a; margin-bottom: 22px;
   }
   header.hero h1 {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 46px;
-    line-height: 1.15; margin-bottom: 16px; position: relative;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 52px; line-height: 1.12;
+    color: #f8f3e9; margin-bottom: 18px;
   }
-  header.hero p.sub {
-    font-size: 16px; opacity: .92; max-width: 480px; margin: 0 auto; position: relative;
+  header.hero h1 em { font-style: italic; color: #d4af6a; }
+  header.hero p.sub { font-size: 15.5px; color: #a89e8d; max-width: 440px; margin: 0 auto; }
+  header.hero .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; }
+  header.hero .cta a.primary {
+    background: #d4af6a; color: #100e0c; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px;
   }
-  header.hero .cta {
-    margin-top: 32px; position: relative;
-  }
-  header.hero .cta a {
-    display: inline-block; background: #fff; color: #7c3f2e; font-weight: 700;
-    padding: 13px 30px; border-radius: 30px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  header.hero .cta a.ghost {
+    border: 1px solid rgba(212,175,106,.4); color: #e9e3d8; padding: 13px 28px; border-radius: 3px; font-size: 13px; letter-spacing: .5px;
   }
 
-  main { max-width: 1000px; margin: -50px auto 0; padding: 0 20px 60px; position: relative; z-index: 2; }
+  main { max-width: 1000px; margin: 0 auto; padding: 70px 20px 60px; }
 
-  .card-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 64px; }
-  .card {
-    background: #fff; border-radius: 16px; padding: 28px 22px; box-shadow: 0 10px 30px rgba(80,50,30,.08);
-    text-align: center;
-  }
-  .card .icon { font-size: 28px; margin-bottom: 10px; }
-  .card h3 { font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 6px; color: #7c3f2e; }
-  .card p { font-size: 13.5px; color: #6b5f52; }
+  .divider { width: 40px; height: 2px; background: #d4af6a; margin-bottom: 20px; }
 
-  section { margin-bottom: 56px; }
-  section h2 {
-    font-family: 'Fraunces', serif; font-size: 26px; color: #3a3227; margin-bottom: 18px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  section h2::before { content: ""; width: 26px; height: 3px; background: #d9925f; border-radius: 2px; display: inline-block; }
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 30px 0 60px; border-bottom: 1px solid rgba(212,175,106,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
+  .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #d4af6a; font-weight: 600; }
+  .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #8a7f6c; text-transform: uppercase; }
 
-  .about p { font-size: 15px; color: #4b4238; max-width: 680px; }
+  section { margin-bottom: 66px; }
+  section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #f3ead9; margin-bottom: 6px; }
+  section .desc { font-size: 14px; color: #9c9282; margin-bottom: 26px; max-width: 560px; }
 
-  .hours-box { background: #fff; border-radius: 14px; padding: 22px 26px; box-shadow: 0 8px 24px rgba(80,50,30,.06); max-width: 420px; }
-  .hours-row { display: flex; justify-content: space-between; font-size: 14.5px; padding: 8px 0; border-bottom: 1px solid #f1e6d8; }
+  .about p { font-size: 15px; color: #b8ac97; max-width: 680px; }
+
+  .hours-box { background: rgba(255,255,255,.03); border: 1px solid rgba(212,175,106,.14); border-radius: 4px; padding: 26px 30px; max-width: 420px; }
+  .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #cfc6b6; }
   .hours-row:last-child { border-bottom: none; }
-  .hours-row span:last-child { font-weight: 600; color: #7c3f2e; }
+  .hours-row span:last-child { font-weight: 600; color: #d4af6a; }
 
-  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .service {
-    background: #fff; border-radius: 14px; padding: 18px 22px; box-shadow: 0 8px 24px rgba(80,50,30,.06);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .service .name { font-size: 14.5px; font-weight: 600; color: #3a3227; }
-  .service .name small { display: block; font-weight: 400; color: #8a7c6a; font-size: 12px; margin-top: 2px; }
-  .service .price { font-family: 'Fraunces', serif; font-weight: 600; color: #b5643f; font-size: 15px; white-space: nowrap; }
+  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(212,175,106,.14); border: 1px solid rgba(212,175,106,.14); }
+  .service { background: #14110d; padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; }
+  .service .name { font-size: 14.5px; font-weight: 600; color: #f3ead9; }
+  .service .name small { display: block; font-weight: 400; color: #8a7f6c; font-size: 12px; margin-top: 3px; }
+  .service .price { font-family: 'Fraunces', serif; font-weight: 600; color: #d4af6a; font-size: 16px; white-space: nowrap; }
 
-  .ask-box {
-    background: linear-gradient(135deg, #1e1b3a, #3a2f5c); color: #fff; border-radius: 20px;
-    padding: 36px 30px; text-align: center;
-  }
-  .ask-box h2 { color: #fff; justify-content: center; }
-  .ask-box h2::before { background: #d9925f; }
-  .ask-box p { font-size: 14.5px; opacity: .85; margin-bottom: 14px; }
+  .ask-box { background: linear-gradient(135deg, #1a1512, #100e0c); border: 1px solid rgba(212,175,106,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
+  .ask-box h2 { color: #f3ead9; }
+  .ask-box .desc { margin: 0 auto 22px; }
   .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .chip {
-    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
-    padding: 8px 16px; border-radius: 20px; font-size: 13px;
-  }
-  .chips .arrow { align-self: center; opacity: .7; font-size: 13px; }
+  .chip { background: rgba(212,175,106,.08); border: 1px solid rgba(212,175,106,.3); color: #e9e3d8; padding: 9px 18px; border-radius: 20px; font-size: 12.5px; }
+  .chips .arrow { align-self: center; color: #6b6152; font-size: 13px; }
 
-  footer { text-align: center; padding: 30px 20px; font-size: 12px; color: #a99a87; }
+  footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #665e50; border-top: 1px solid rgba(212,175,106,.1); }
 
   @media (max-width: 640px) {
-    .card-row, .services-grid { grid-template-columns: 1fr; }
-    header.hero h1 { font-size: 32px; }
+    .services-grid { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 36px; }
     nav .links { display: none; }
+    .strip { flex-direction: column; }
   }
 </style>
 </head>
 <body>
-  <div class="banner">💡 Demo storefront — showing what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
+  <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
 
   <nav>
-    <div class="logo">Bella Salon &amp; Spa</div>
+    <div class="logo">BELLA</div>
     <div class="links">
       <a href="#about">About</a>
       <a href="#hours">Hours</a>
@@ -122,27 +98,33 @@
   </nav>
 
   <header class="hero">
-    <div class="eyebrow">Asansol · Est. 2018</div>
-    <h1>Look good.<br>Feel unstoppable.</h1>
-    <p class="sub">Hair, skin &amp; bridal beauty — crafted by a team that treats every client like the only one.</p>
-    <div class="cta"><a href="#services">View Services</a></div>
+    <div class="eyebrow">Asansol · Since 2018</div>
+    <h1>Beauty, treated<br>as an <em>art form.</em></h1>
+    <p class="sub">Hair, skin &amp; bridal artistry for those who don't settle for ordinary.</p>
+    <div class="cta">
+      <a class="primary" href="#services">View Services</a>
+      <a class="ghost" href="#hours">Book a Visit</a>
+    </div>
   </header>
 
   <main>
-    <div class="card-row">
-      <div class="card"><div class="icon">💇‍♀️</div><h3>Expert Stylists</h3><p>8 years serving Asansol with premium technique &amp; care.</p></div>
-      <div class="card"><div class="icon">🌿</div><h3>Premium Products</h3><p>Only trusted, skin-safe brands used in every treatment.</p></div>
-      <div class="card"><div class="icon">👰</div><h3>Bridal Specialists</h3><p>Full bridal packages trusted by 200+ Asansol brides.</p></div>
+    <div class="strip">
+      <div><span>8+</span><small>Years Experience</small></div>
+      <div><span>200+</span><small>Brides Styled</small></div>
+      <div><span>4.9★</span><small>Client Rating</small></div>
     </div>
 
     <section class="about" id="about">
+      <div class="divider"></div>
       <h2>About Us</h2>
-      <p>Bella Salon has been serving Asansol for 8 years with expert hair styling, skincare treatments,
-      and bridal makeup packages. Our team is trained in the latest techniques and uses only premium products —
-      because you deserve to feel as good as you look.</p>
+      <p class="desc">A quiet luxury studio in the heart of Asansol.</p>
+      <p>Bella Salon has served Asansol for 8 years with expert hair styling, skincare treatments,
+      and bridal makeup packages. Every technique is refined, every product premium — because how
+      you feel matters as much as how you look.</p>
     </section>
 
     <section id="hours">
+      <div class="divider"></div>
       <h2>Hours</h2>
       <div class="hours-box">
         <div class="hours-row"><span>Monday</span><span>Closed</span></div>
@@ -152,7 +134,8 @@
     </section>
 
     <section id="services">
-      <h2>Popular Services</h2>
+      <div class="divider"></div>
+      <h2>Signature Services</h2>
       <div class="services-grid">
         <div class="service"><span class="name">Haircut &amp; Styling<small>All hair types</small></span><span class="price">₹300+</span></div>
         <div class="service"><span class="name">Bridal Makeup Package<small>Full day coverage</small></span><span class="price">₹8,000+</span></div>
@@ -163,8 +146,9 @@
 
     <section>
       <div class="ask-box">
+        <div class="divider" style="margin:0 auto 20px"></div>
         <h2>Try the assistant →</h2>
-        <p>Click the chat bubble bottom-right and ask it anything a real customer would:</p>
+        <p class="desc" style="margin-left:auto;margin-right:auto">Click the chat bubble bottom-right and ask it anything a real customer would:</p>
         <div class="chips">
           <span class="chip">"Are you open on Monday?"</span>
           <span class="arrow">→</span>
@@ -182,7 +166,7 @@
           data-api="https://ai-brain-production-7286.up.railway.app"
           data-client-id="demo-bella-salon"
           data-bot-name="Bella Salon Assistant"
-          data-color="#7c3f2e"
+          data-color="#b5863f"
           data-greeting="Hi! I'm Bella Salon's assistant. Ask me about our services, hours, or prices 😊"
           data-persona="You are the friendly front-desk assistant for Bella Salon & Spa in Asansol, a hair/skin/bridal salon. Hours: Tue-Fri 10am-8pm, Sat-Sun 9am-9pm, closed Monday. Services and prices: Haircut & Styling from Rs 300, Bridal Makeup Package from Rs 8000, Facial & Skincare from Rs 800, Hair Spa from Rs 1200. Be warm, concise, and helpful. If asked something you don't know, tell them to call the salon directly."
   ></script>

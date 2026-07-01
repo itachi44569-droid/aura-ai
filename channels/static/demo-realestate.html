@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Estates — Asansol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', Arial, sans-serif; color: #dce3ee; background: #0b1220; line-height: 1.65; }
+  a { text-decoration: none; }
+  .banner { background: #c9a349; color: #0b1220; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 26px 44px; max-width: 1120px; margin: 0 auto; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; color: #f1f4f9; }
+  nav .links { display: flex; gap: 32px; font-size: 13px; color: #8a97ac; }
+
+  header.hero {
+    background: radial-gradient(ellipse at 50% -10%, rgba(201,163,73,.14), transparent 60%), #0b1220;
+    padding: 76px 20px 110px; text-align: center; border-bottom: 1px solid rgba(201,163,73,.16);
+  }
+  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #c9a349; margin-bottom: 22px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 48px; line-height: 1.15; color: #f1f4f9; margin-bottom: 18px; }
+  header.hero h1 em { font-style: italic; color: #c9a349; }
+  header.hero p.sub { font-size: 15.5px; color: #93a0b5; max-width: 460px; margin: 0 auto; }
+  header.hero .cta { margin-top: 34px; display: flex; gap: 14px; justify-content: center; }
+  header.hero .cta a.primary { background: #c9a349; color: #0b1220; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
+  header.hero .cta a.ghost { border: 1px solid rgba(201,163,73,.4); color: #dce3ee; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 70px 20px 60px; }
+  .divider { width: 40px; height: 2px; background: #c9a349; margin-bottom: 20px; }
+
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 30px 0 60px; border-bottom: 1px solid rgba(201,163,73,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
+  .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #c9a349; font-weight: 600; }
+  .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #6d7b90; text-transform: uppercase; }
+
+  section { margin-bottom: 66px; }
+  section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #f1f4f9; margin-bottom: 6px; }
+  section .desc { font-size: 14px; color: #7c899e; margin-bottom: 26px; max-width: 560px; }
+  .about p { font-size: 15px; color: #aab6c8; max-width: 680px; }
+
+  .hours-box { background: rgba(255,255,255,.03); border: 1px solid rgba(201,163,73,.14); border-radius: 4px; padding: 26px 30px; max-width: 420px; }
+  .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #c3cbdb; }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-row span:last-child { font-weight: 600; color: #c9a349; }
+
+  .listings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .listing { background: rgba(255,255,255,.03); border: 1px solid rgba(201,163,73,.14); border-radius: 8px; overflow: hidden; }
+  .listing .img { height: 90px; background: linear-gradient(135deg, #1a2438, #101825); }
+  .listing .body { padding: 16px 18px; }
+  .listing .price { font-family: 'Fraunces', serif; font-weight: 600; color: #c9a349; font-size: 16px; }
+  .listing .name { font-size: 13px; color: #dce3ee; margin: 4px 0 6px; }
+  .listing .meta { font-size: 11.5px; color: #6d7b90; }
+
+  .ask-box { background: linear-gradient(135deg, #101825, #0b1220); border: 1px solid rgba(201,163,73,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
+  .ask-box h2 { color: #f1f4f9; }
+  .ask-box .desc { margin: 0 auto 22px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .chip { background: rgba(201,163,73,.08); border: 1px solid rgba(201,163,73,.3); color: #dce3ee; padding: 9px 18px; border-radius: 20px; font-size: 12.5px; }
+  .chips .arrow { align-self: center; color: #4c5769; font-size: 13px; }
+
+  footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #4c5769; border-top: 1px solid rgba(201,163,73,.1); }
+  @media (max-width: 640px) { .listings-grid { grid-template-columns: 1fr; } header.hero h1 { font-size: 32px; } nav .links { display: none; } .strip { flex-direction: column; } }
+</style>
+</head>
+<body>
+  <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
+
+  <nav>
+    <div class="logo">MERIDIAN ESTATES</div>
+    <div class="links"><a href="#about">About</a><a href="#hours">Contact</a><a href="#listings">Listings</a></div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">Asansol · Residential &amp; Commercial</div>
+    <h1>Find home,<br>find <em>value.</em></h1>
+    <p class="sub">Trusted local property experts helping you buy, sell, and rent with confidence.</p>
+    <div class="cta"><a class="primary" href="#listings">View Listings</a><a class="ghost" href="#hours">Book a Consultation</a></div>
+  </header>
+
+  <main>
+    <div class="strip">
+      <div><span>12+</span><small>Years in Asansol</small></div>
+      <div><span>350+</span><small>Properties Sold</small></div>
+      <div><span>4.8★</span><small>Client Rating</small></div>
+    </div>
+
+    <section class="about" id="about">
+      <div class="divider"></div>
+      <h2>About Us</h2>
+      <p class="desc">Local expertise, honest guidance.</p>
+      <p>Meridian Estates has helped Asansol families and businesses find the right property for
+      over 12 years. We handle residential sales, rentals, and commercial leasing with full
+      transparency from first visit to final paperwork.</p>
+    </section>
+
+    <section id="hours">
+      <div class="divider"></div>
+      <h2>Office Hours</h2>
+      <div class="hours-box">
+        <div class="hours-row"><span>Monday – Saturday</span><span>10:00 AM – 7:00 PM</span></div>
+        <div class="hours-row"><span>Sunday</span><span>By appointment</span></div>
+      </div>
+    </section>
+
+    <section id="listings">
+      <div class="divider"></div>
+      <h2>Featured Listings</h2>
+      <div class="listings-grid">
+        <div class="listing"><div class="img"></div><div class="body"><div class="price">₹42,00,000</div><div class="name">3BHK Apartment, Ushagram</div><div class="meta">3 Bed · 2 Bath · 1450 sqft</div></div></div>
+        <div class="listing"><div class="img"></div><div class="body"><div class="price">₹18,500/mo</div><div class="name">2BHK Flat, Rambandhu Talab</div><div class="meta">2 Bed · 2 Bath · 980 sqft</div></div></div>
+        <div class="listing"><div class="img"></div><div class="body"><div class="price">₹65,00,000</div><div class="name">Commercial Shop, GT Road</div><div class="meta">Ground Floor · 600 sqft</div></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="ask-box">
+        <div class="divider" style="margin:0 auto 20px"></div>
+        <h2>Try the assistant →</h2>
+        <p class="desc" style="margin-left:auto;margin-right:auto">Click the chat bubble bottom-right and ask it anything a real customer would:</p>
+        <div class="chips">
+          <span class="chip">"Do you have any 2BHK for rent?"</span>
+          <span class="arrow">→</span>
+          <span class="chip">"What's your commission rate?"</span>
+          <span class="arrow">→</span>
+          <span class="chip">"Can I book a site visit?"</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Demo storefront built to showcase the AI chatbot widget. Not a real business.</footer>
+
+  <script src="/static/biz-widget.js"
+          data-api="https://ai-brain-production-7286.up.railway.app"
+          data-client-id="demo-meridian-estates"
+          data-bot-name="Meridian Estates Assistant"
+          data-color="#c9a349"
+          data-greeting="Hi! I'm Meridian Estates' assistant. Ask me about listings, pricing, or booking a visit."
+          data-persona="You are the assistant for Meridian Estates, a real estate agency in Asansol handling residential and commercial property. Office hours: Mon-Sat 10am-7pm, Sunday by appointment. Current listings: 3BHK Apartment in Ushagram Rs 42,00,000, 2BHK Flat in Rambandhu Talab Rs 18,500/month rent, Commercial Shop on GT Road Rs 65,00,000. Standard commission is 1% of sale price. Be professional, concise, and trustworthy. If asked something you don't know, tell them to call the office directly."
+  ></script>
+</body>
+</html>

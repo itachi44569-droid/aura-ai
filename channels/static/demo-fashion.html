@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAISON NOIR — Asansol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', Arial, sans-serif; color: #111; background: #fff; line-height: 1.6; }
+  a { text-decoration: none; }
+  .banner { background: #111; color: #fff; text-align: center; padding: 10px 16px; font-size: 12.5px; letter-spacing: .5px; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 30px 44px; max-width: 1120px; margin: 0 auto; }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; letter-spacing: 3px; }
+  nav .links { display: flex; gap: 34px; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #444; }
+
+  header.hero { padding: 90px 20px 110px; text-align: center; border-bottom: 1px solid #eee; }
+  header.hero .eyebrow { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #999; margin-bottom: 26px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 60px; line-height: 1.05; letter-spacing: -1px; margin-bottom: 22px; }
+  header.hero p.sub { font-size: 14.5px; color: #666; max-width: 420px; margin: 0 auto; letter-spacing: .2px; }
+  header.hero .cta { margin-top: 36px; }
+  header.hero .cta a { display: inline-block; background: #111; color: #fff; font-weight: 600; padding: 15px 36px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 80px 20px 60px; }
+
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 0 0 70px; flex-wrap: wrap; gap: 20px; }
+  .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500; }
+  .strip div small { font-size: 10.5px; letter-spacing: 2px; color: #999; text-transform: uppercase; }
+
+  section { margin-bottom: 76px; }
+  section .kicker { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #999; margin-bottom: 10px; }
+  section h2 { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 500; margin-bottom: 8px; }
+  section .desc { font-size: 13.5px; color: #777; margin-bottom: 30px; max-width: 520px; }
+
+  .about p { font-size: 14.5px; color: #444; max-width: 640px; }
+
+  .hours-box { max-width: 380px; }
+  .hours-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 12px 0; border-bottom: 1px solid #eee; }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-row span:last-child { font-weight: 600; }
+
+  .collection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #eee; }
+  .piece { background: #fafafa; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+  .piece .swatch { width: 44px; height: 44px; border-radius: 50%; margin-bottom: 16px; }
+  .piece .name { font-size: 13px; font-weight: 600; letter-spacing: .3px; }
+  .piece .price { font-family: 'Fraunces', serif; font-size: 14px; color: #555; margin-top: 6px; }
+
+  .ask-box { background: #111; color: #fff; padding: 54px 34px; text-align: center; }
+  .ask-box .kicker { color: #999; }
+  .ask-box h2 { color: #fff; }
+  .ask-box .desc { color: #bbb; margin-left: auto; margin-right: auto; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .chip { border: 1px solid #444; color: #eee; padding: 9px 18px; font-size: 12px; letter-spacing: .3px; }
+  .chips .arrow { align-self: center; color: #555; font-size: 13px; }
+
+  footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #999; border-top: 1px solid #eee; }
+  @media (max-width: 640px) { .collection-grid { grid-template-columns: repeat(2, 1fr); } header.hero h1 { font-size: 38px; } nav .links { display: none; } .strip { flex-direction: column; } }
+</style>
+</head>
+<body>
+  <div class="banner">💡 Demo storefront — this is what the AI chatbot looks like on a real business site. Click the chat bubble bottom-right →</div>
+
+  <nav>
+    <div class="logo">MAISON NOIR</div>
+    <div class="links"><a href="#about">About</a><a href="#hours">Visit</a><a href="#collection">Collection</a></div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">Asansol · Contemporary Womenswear</div>
+    <h1>Wear what<br>lasts.</h1>
+    <p class="sub">Considered pieces, made to be worn for years — not seasons.</p>
+    <div class="cta"><a href="#collection">Shop the Edit</a></div>
+  </header>
+
+  <main>
+    <div class="strip">
+      <div><span>2016</span><small>Founded</small></div>
+      <div><span>60+</span><small>Curated Pieces</small></div>
+      <div><span>4.9★</span><small>Client Rating</small></div>
+    </div>
+
+    <section class="about" id="about">
+      <div class="kicker">Our Story</div>
+      <h2>About the Studio</h2>
+      <p class="desc">Slow fashion, made in small batches.</p>
+      <p>MAISON NOIR designs contemporary womenswear for Asansol's modern woman — clean lines,
+      quality fabric, and pieces built to outlast trends. Every collection is limited by design.</p>
+    </section>
+
+    <section id="hours">
+      <div class="kicker">Visit Us</div>
+      <h2>Store Hours</h2>
+      <div class="hours-box">
+        <div class="hours-row"><span>Monday</span><span>Closed</span></div>
+        <div class="hours-row"><span>Tuesday – Saturday</span><span>11:00 AM – 8:00 PM</span></div>
+        <div class="hours-row"><span>Sunday</span><span>12:00 PM – 6:00 PM</span></div>
+      </div>
+    </section>
+
+    <section id="collection">
+      <div class="kicker">Now Showing</div>
+      <h2>The Collection</h2>
+      <div class="collection-grid">
+        <div class="piece"><div class="swatch" style="background:#1c1c1c"></div><div class="name">Tailored Blazer</div><div class="price">₹3,200</div></div>
+        <div class="piece"><div class="swatch" style="background:#c9beac"></div><div class="name">Linen Wrap Dress</div><div class="price">₹2,600</div></div>
+        <div class="piece"><div class="swatch" style="background:#7a6a58"></div><div class="name">Silk Column Skirt</div><div class="price">₹2,100</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="ask-box">
+        <div class="kicker">Ask Us Anything</div>
+        <h2>Try the assistant →</h2>
+        <p class="desc">Click the chat bubble bottom-right and ask it anything a real customer would:</p>
+        <div class="chips">
+          <span class="chip">"Are you open on Monday?"</span>
+          <span class="arrow">→</span>
+          <span class="chip">"Do you have this in a size M?"</span>
+          <span class="arrow">→</span>
+          <span class="chip">"Can I return an item?"</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Demo storefront built to showcase the AI chatbot widget. Not a real business.</footer>
+
+  <script src="/static/biz-widget.js"
+          data-api="https://ai-brain-production-7286.up.railway.app"
+          data-client-id="demo-maison-noir"
+          data-bot-name="MAISON NOIR Assistant"
+          data-color="#111111"
+          data-greeting="Hi! I'm MAISON NOIR's assistant. Ask me about our collection, hours, or sizing."
+          data-persona="You are the assistant for MAISON NOIR, a contemporary womenswear boutique in Asansol. Hours: Tue-Sat 11am-8pm, Sun 12pm-6pm, closed Monday. Current collection: Tailored Blazer Rs 3200, Linen Wrap Dress Rs 2600, Silk Column Skirt Rs 2100. Returns accepted within 7 days with tag attached. Be elegant, concise, and helpful. If asked something you don't know, tell them to call or visit the store."
+  ></script>
+</body>
+</html>
