@@ -8,10 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', Arial, sans-serif; color: #dce3ee; background: #0b1220; line-height: 1.65; }
+  body { font-family: 'Inter', Arial, sans-serif; color: #16213a; background: #f6f7fa; line-height: 1.65; }
   a { text-decoration: none; }
   img { display: block; }
-  .banner { background: #c9a349; color: #0b1220; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
+  .banner { background: #16213a; color: #ecd28f; text-align: center; padding: 10px 16px; font-size: 13px; font-weight: 600; }
 
   nav {
     position: absolute; top: 0; left: 0; right: 0; z-index: 5;
@@ -21,62 +21,73 @@
   .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; color: #fff; }
   nav .links { display: flex; gap: 32px; font-size: 13px; color: #e7ecf3; }
 
-  header.hero { position: relative; height: 78vh; min-height: 520px; display: flex; align-items: flex-end; background: #0b1220; }
+  header.hero { position: relative; height: 60vh; min-height: 420px; }
   header.hero .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  header.hero .overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,18,32,.3) 0%, rgba(11,18,32,.6) 55%, #0b1220 100%); }
-  header.hero .content { position: relative; z-index: 2; max-width: 640px; padding: 0 44px 64px; }
-  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #c9a349; margin-bottom: 22px; }
-  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 50px; line-height: 1.15; color: #f1f4f9; margin-bottom: 18px; }
-  header.hero h1 em { font-style: italic; color: #c9a349; }
-  header.hero p.sub { font-size: 15.5px; color: #dbe2ee; max-width: 460px; }
-  header.hero .cta { margin-top: 30px; display: flex; gap: 14px; }
-  header.hero .cta a.primary { background: #c9a349; color: #0b1220; font-weight: 700; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
-  header.hero .cta a.ghost { border: 1px solid rgba(255,255,255,.4); color: #fff; padding: 13px 28px; border-radius: 3px; font-size: 13px; }
+  header.hero .overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,18,32,.35) 0%, rgba(11,18,32,.55) 100%); }
+  header.hero .content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px; }
+  header.hero .eyebrow { font-size: 11.5px; letter-spacing: 4px; text-transform: uppercase; color: #ecd28f; margin-bottom: 20px; }
+  header.hero h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 46px; line-height: 1.15; color: #fff; margin-bottom: 14px; }
+  header.hero h1 em { font-style: italic; color: #ecd28f; }
+  header.hero p.sub { font-size: 15px; color: #e2e7f0; max-width: 460px; }
+
+  .search-card {
+    max-width: 900px; margin: -40px auto 0; background: #fff; border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(22,33,58,.14); padding: 22px 28px; position: relative; z-index: 3;
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  }
+  .search-card .field { flex: 1; min-width: 140px; }
+  .search-card .field label { display: block; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #8894a8; margin-bottom: 4px; }
+  .search-card .field .val { font-size: 14px; font-weight: 600; color: #16213a; }
+  .search-card button { background: #c9a349; color: #16213a; font-weight: 700; padding: 12px 26px; border-radius: 8px; font-size: 13px; border: none; }
 
   main { max-width: 1000px; margin: 0 auto; padding: 70px 20px 60px; }
   .divider { width: 40px; height: 2px; background: #c9a349; margin-bottom: 20px; }
 
-  .strip { display: flex; justify-content: space-around; text-align: center; padding: 0 0 60px; border-bottom: 1px solid rgba(201,163,73,.14); margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
-  .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #c9a349; font-weight: 600; }
-  .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #6d7b90; text-transform: uppercase; }
+  .strip { display: flex; justify-content: space-around; text-align: center; padding: 0 0 60px; border-bottom: 1px solid #e4e7ee; margin-bottom: 60px; flex-wrap: wrap; gap: 20px; }
+  .strip div span { display: block; font-family: 'Fraunces', serif; font-size: 26px; color: #16213a; font-weight: 600; }
+  .strip div small { font-size: 11.5px; letter-spacing: 1px; color: #8894a8; text-transform: uppercase; }
 
   section { margin-bottom: 66px; }
-  section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #f1f4f9; margin-bottom: 6px; }
-  section .desc { font-size: 14px; color: #7c899e; margin-bottom: 26px; max-width: 560px; }
-
+  section h2 { font-family: 'Fraunces', serif; font-size: 28px; color: #16213a; margin-bottom: 6px; }
+  section .desc { font-size: 14px; color: #6b7690; margin-bottom: 26px; max-width: 560px; }
   .about-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; align-items: center; }
-  .about-grid p { font-size: 15px; color: #aab6c8; }
-  .about-grid img { width: 100%; height: 260px; object-fit: cover; border-radius: 8px; }
+  .about-grid p { font-size: 15px; color: #3d4a63; }
+  .about-grid img { width: 100%; height: 240px; object-fit: cover; border-radius: 12px; }
 
-  .hours-box { background: rgba(255,255,255,.03); border: 1px solid rgba(201,163,73,.14); border-radius: 4px; padding: 26px 30px; max-width: 420px; }
-  .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #c3cbdb; }
+  .hours-box { background: #fff; border: 1px solid #e4e7ee; border-radius: 12px; padding: 26px 30px; max-width: 420px; }
+  .hours-row { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-bottom: 1px solid #eef0f5; }
   .hours-row:last-child { border-bottom: none; }
-  .hours-row span:last-child { font-weight: 600; color: #c9a349; }
+  .hours-row span:last-child { font-weight: 600; color: #16213a; }
 
-  .listings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .listing { background: rgba(255,255,255,.03); border: 1px solid rgba(201,163,73,.14); border-radius: 8px; overflow: hidden; }
-  .listing img { width: 100%; height: 130px; object-fit: cover; }
-  .listing .body { padding: 16px 18px; }
-  .listing .price { font-family: 'Fraunces', serif; font-weight: 600; color: #c9a349; font-size: 16px; }
-  .listing .name { font-size: 13px; color: #dce3ee; margin: 4px 0 6px; }
-  .listing .meta { font-size: 11.5px; color: #6d7b90; }
+  .listing-row {
+    display: flex; gap: 20px; background: #fff; border: 1px solid #e4e7ee; border-radius: 12px;
+    overflow: hidden; margin-bottom: 14px; align-items: stretch;
+  }
+  .listing-row img { width: 220px; height: auto; object-fit: cover; flex-shrink: 0; }
+  .listing-row .body { padding: 18px 22px; display: flex; flex-direction: column; justify-content: center; }
+  .listing-row .price { font-family: 'Fraunces', serif; font-weight: 700; color: #16213a; font-size: 20px; }
+  .listing-row .name { font-size: 14px; color: #3d4a63; margin: 6px 0 4px; font-weight: 600; }
+  .listing-row .meta { font-size: 12.5px; color: #8894a8; }
+  .listing-row .tag { display: inline-block; background: #fbf1dc; color: #a3792c; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; margin-top: 8px; width: fit-content; }
 
-  .ask-box { background: linear-gradient(135deg, #101825, #0b1220); border: 1px solid rgba(201,163,73,.25); border-radius: 6px; padding: 44px 34px; text-align: center; }
-  .ask-box h2 { color: #f1f4f9; }
-  .ask-box .desc { margin: 0 auto 22px; }
+  .ask-box { background: #16213a; border-radius: 18px; padding: 44px 34px; text-align: center; }
+  .ask-box h2 { color: #fff; }
+  .ask-box .desc { margin: 0 auto 22px; color: #a9b3c7; }
   .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .chip { background: rgba(201,163,73,.08); border: 1px solid rgba(201,163,73,.3); color: #dce3ee; padding: 9px 18px; border-radius: 20px; font-size: 12.5px; }
-  .chips .arrow { align-self: center; color: #4c5769; font-size: 13px; }
+  .chip { background: rgba(255,255,255,.06); border: 1px solid rgba(236,210,143,.35); color: #ecd28f; padding: 9px 18px; border-radius: 20px; font-size: 12.5px; }
+  .chips .arrow { align-self: center; color: #55617b; font-size: 13px; }
 
-  footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #4c5769; border-top: 1px solid rgba(201,163,73,.1); }
-  footer .credit { margin-top: 6px; color: #c9a349; font-weight: 600; }
+  footer { text-align: center; padding: 34px 20px; font-size: 11.5px; color: #8894a8; border-top: 1px solid #e4e7ee; }
+  footer .credit { margin-top: 6px; color: #16213a; font-weight: 600; }
 
   @media (max-width: 720px) {
-    .listings-grid { grid-template-columns: 1fr; }
     .about-grid { grid-template-columns: 1fr; }
-    header.hero h1 { font-size: 32px; }
+    .listing-row { flex-direction: column; }
+    .listing-row img { width: 100%; height: 160px; }
+    header.hero h1 { font-size: 30px; }
     nav .links { display: none; }
     .strip { flex-direction: column; }
+    .search-card { margin: -30px 16px 0; }
   }
 </style>
 </head>
@@ -94,9 +105,15 @@
       <div class="eyebrow">Asansol · Residential &amp; Commercial</div>
       <h1>Find home,<br>find <em>value.</em></h1>
       <p class="sub">Trusted local property experts helping you buy, sell, and rent with confidence.</p>
-      <div class="cta"><a class="primary" href="#listings">View Listings</a><a class="ghost" href="#hours">Book a Consultation</a></div>
     </div>
   </header>
+
+  <div class="search-card">
+    <div class="field"><label>Location</label><div class="val">Asansol</div></div>
+    <div class="field"><label>Type</label><div class="val">Any Property</div></div>
+    <div class="field"><label>Budget</label><div class="val">Any Price</div></div>
+    <button>Search</button>
+  </div>
 
   <main>
     <div class="strip">
@@ -129,27 +146,40 @@
     <section id="listings">
       <div class="divider"></div>
       <h2>Featured Listings</h2>
-      <div class="listings-grid">
-        <div class="listing">
-          <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500&q=80&auto=format" alt="3BHK Apartment">
-          <div class="body"><div class="price">₹42,00,000</div><div class="name">3BHK Apartment, Ushagram</div><div class="meta">3 Bed · 2 Bath · 1450 sqft</div></div>
+      <div class="listing-row">
+        <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80&auto=format" alt="3BHK Apartment">
+        <div class="body">
+          <div class="price">₹42,00,000</div>
+          <div class="name">3BHK Apartment, Ushagram</div>
+          <div class="meta">3 Bed · 2 Bath · 1450 sqft</div>
+          <span class="tag">For Sale</span>
         </div>
-        <div class="listing">
-          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&q=80&auto=format" alt="2BHK Flat">
-          <div class="body"><div class="price">₹18,500/mo</div><div class="name">2BHK Flat, Rambandhu Talab</div><div class="meta">2 Bed · 2 Bath · 980 sqft</div></div>
+      </div>
+      <div class="listing-row">
+        <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80&auto=format" alt="2BHK Flat">
+        <div class="body">
+          <div class="price">₹18,500/mo</div>
+          <div class="name">2BHK Flat, Rambandhu Talab</div>
+          <div class="meta">2 Bed · 2 Bath · 980 sqft</div>
+          <span class="tag">For Rent</span>
         </div>
-        <div class="listing">
-          <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&q=80&auto=format" alt="Commercial Shop">
-          <div class="body"><div class="price">₹65,00,000</div><div class="name">Commercial Shop, GT Road</div><div class="meta">Ground Floor · 600 sqft</div></div>
+      </div>
+      <div class="listing-row">
+        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80&auto=format" alt="Commercial Shop">
+        <div class="body">
+          <div class="price">₹65,00,000</div>
+          <div class="name">Commercial Shop, GT Road</div>
+          <div class="meta">Ground Floor · 600 sqft</div>
+          <span class="tag">For Sale</span>
         </div>
       </div>
     </section>
 
     <section>
       <div class="ask-box">
-        <div class="divider" style="margin:0 auto 20px"></div>
+        <div class="divider" style="margin:0 auto 20px;background:#ecd28f"></div>
         <h2>Try the assistant →</h2>
-        <p class="desc" style="margin-left:auto;margin-right:auto">Click the chat bubble bottom-right and ask it anything a real customer would:</p>
+        <p class="desc">Click the chat bubble bottom-right and ask it anything a real customer would:</p>
         <div class="chips">
           <span class="chip">"Do you have any 2BHK for rent?"</span>
           <span class="arrow">→</span>
